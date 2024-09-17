@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -31,7 +31,15 @@ class OpenGLWidget(QGLWidget):
         self.faces = None
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateGL)
-        self.timer.start(48)  # 16 is near 60 fps
+        self.timer.start(48)  # 16 is near 60 fps 
+        #voor de camera
+        self.camera_pos = np.array([0.0, 0.0, -5.0])  # X, Y, Z position
+        self.mouse_last_pos = None
+        self.is_right_button_pressed = False  # Initialize the flag here 
+        self.is_left_button_pressed = False #Left button standard false 
+        # Object rotation angles
+        self.rotation_x = 0
+        self.rotation_y = 0
 
     def initializeGL(self):
         glEnable(GL_DEPTH_TEST)
@@ -58,9 +66,18 @@ class OpenGLWidget(QGLWidget):
     # adding color to the object
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    # Apply camera translation before rendering the object
+        glLoadIdentity()  # Reset transformations
+        glTranslatef(self.camera_pos[0], self.camera_pos[1], self.camera_pos[2]) 
+
+        # Apply object rotation based on mouse input
+        glRotatef(self.rotation_x, 1, 0, 0)  # Rotate around X-axis
+        glRotatef(self.rotation_y, 0, 1, 0)  # Rotate around Y-axis
+
+
         if self.vertices is not None and self.faces is not None:
             self.draw_model()
-
     # rendering the object
     def draw_model(self):
         glBegin(GL_TRIANGLES)
@@ -79,6 +96,61 @@ class OpenGLWidget(QGLWidget):
     def load_obj_file(self, filename):
         self.vertices, self.faces = load_obj(filename)
 
+    #Detecting pressed button (right)
+    def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            self.is_right_button_pressed = True
+            self.mouse_last_pos = event.pos()
+        elif event.button() == Qt.LeftButton:
+            self.is_left_button_pressed = True
+            self.mouse_last_pos = event.pos()
+
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.RightButton:
+            self.is_right_button_pressed = False
+        elif event.button() == Qt.LeftButton:
+            self.is_left_button_pressed = False
+
+    # Mouse move event to translate camera along X and Y axes
+    def mouseMoveEvent(self, event):
+        if self.is_right_button_pressed:
+            dx = event.x() - self.mouse_last_pos.x()
+            dy = event.y() - self.mouse_last_pos.y()
+
+            # Sensitivity factor for camera movement
+            sensitivity = 0.01
+
+            # Update camera position along the X and Y axes based on mouse movement
+            self.camera_pos[0] -= dx * sensitivity  # Move along X axis
+            self.camera_pos[1] += dy * sensitivity  # Move along Y axis (inverted)
+
+            self.mouse_last_pos = event.pos()  # Update the last mouse position
+
+        elif self.is_left_button_pressed:
+            dx = event.x() - self.mouse_last_pos.x()
+            dy = event.y() - self.mouse_last_pos.y() 
+
+             # Sensitivity for rotation
+            rotation_sensitivity = 0.5
+
+            # Update rotation angles for object
+            self.rotation_x += dy * rotation_sensitivity  # Rotate around X-axis (up/down)
+            self.rotation_y += dx * rotation_sensitivity  # Rotate around Y-axis (left/right)
+
+            self.mouse_last_pos = event.pos()  # Update the last mouse position
+
+    def wheelEvent(self, event):
+        zoom_sensitivity = 0.05  # Adjust sensitivity as needed
+        delta = event.angleDelta().y()  # Get the scroll amount
+    
+        if delta > 0:
+            self.camera_pos[2] += zoom_sensitivity  # Zoom out
+        else:
+            self.camera_pos[2] -= zoom_sensitivity  # Zoom in
+    
+        self.update()  # Update the view
+        
 ############################################################################################
 # Window (in which OpenGL widget exists)
 ############################################################################################
