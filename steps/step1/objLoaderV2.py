@@ -16,7 +16,8 @@ class OpenGLWidget(QGLWidget):
         super(OpenGLWidget, self).__init__(parent)
         self.vertices = []
         self.faces = []
-        self.display_vertices = True
+        self.display_faces = False
+        self.display_edges = False
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateGL)
         self.timer.start(16)  # 16 is near 60 fps
@@ -48,6 +49,8 @@ class OpenGLWidget(QGLWidget):
 # Rendering the objects *Lights in progress*
 ############################################################################################
     def initializeGL(self):
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
@@ -59,7 +62,7 @@ class OpenGLWidget(QGLWidget):
         glEnable(GL_LIGHT1)
         glLightfv(GL_LIGHT1, GL_POSITION, [-1, -1, -1, 0])
         glLightfv(GL_LIGHT1, GL_AMBIENT, [0.2, 0.2, 0.2, 1.0])
-        glLightfv(GL_LIGHT1, GL_DIFFUSE, [0.8, 0.6, 0.8, 1.0])
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, [0.8, 0.8, 0.8, 1.0])
         glLightfv(GL_LIGHT1, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
         glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [0.5, 0.5, 0.5, 1.0])
         glMaterialfv(GL_FRONT, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
@@ -81,11 +84,11 @@ class OpenGLWidget(QGLWidget):
         # Apply object rotation based on mouse input
         glRotatef(self.rotation_x, 1, 0, 0)  # Rotate around X-axis
         glRotatef(self.rotation_y, 0, 1, 0)  # Rotate around Y-axis
-        if self.display_vertices:
-            self.draw_vertices()
-        else:
-            #self.draw_edges() voor nu nog even niet
+        self.draw_vertices()
+        if self.display_faces:                    
             self.draw_faces()
+        if self.display_edges:
+            self.draw_edges() #voor nu nog even niet
 
     #Drawing the vertices   
     def draw_vertices(self):
@@ -97,18 +100,22 @@ class OpenGLWidget(QGLWidget):
 
     # Drawing the edges
     def draw_edges(self):
-        glBegin(GL_LINES)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+        glEnable(GL_POLYGON_OFFSET_LINE)
+        glPolygonOffset(-1.0, -1.0)
         glColor3f(0.0, 0.0, 0.0)  # Black color for edges
+        glBegin(GL_TRIANGLES)
         for face in self.faces:
-            for i in range(len(face)):
-                glVertex3fv(self.vertices[face[i]])
-                glVertex3fv(self.vertices[face[(i + 1) % len(face)]])
+            for vertex_idx in face:
+                glVertex3fv(self.vertices[vertex_idx])
         glEnd()
+        glDisable(GL_POLYGON_OFFSET_LINE)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
     #Drawing the faces
     def draw_faces(self):
         glBegin(GL_TRIANGLES)
-        glColor4f(0.867, 0.627, 0.867, 0.2)
+        glColor4f(0.867, 0.627, 0.867, 0.8)
         for face in self.faces:
             for vertex_idx in face:
                 glVertex3fv(self.vertices[vertex_idx])
@@ -116,7 +123,11 @@ class OpenGLWidget(QGLWidget):
 
     #Toggle view
     def toggle_display_mode(self):
-        self.display_vertices = not self.display_vertices
+        self.display_faces = not self.display_faces
+        self.update()
+
+    def toggle_edges(self):
+        self.display_edges = not self.display_edges
         self.update()
 
     #Getting the counts
@@ -175,7 +186,7 @@ class OpenGLWidget(QGLWidget):
             self.mouse_last_pos = event.pos()  # Update the last mouse position
 
     def wheelEvent(self, event):
-        zoom_sensitivity = 0.05  # Adjust sensitivity as needed
+        zoom_sensitivity = 0.35  # Adjust sensitivity as needed
         delta = event.angleDelta().y()  # Get the scroll amount
     
         if delta > 0:
@@ -192,7 +203,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Object testing')
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 900, 600)
         self.opengl_widget = OpenGLWidget(self)
     
         #Create side panel with buttons
@@ -216,6 +227,11 @@ class MainWindow(QMainWindow):
         #Toggle button faces/vertices
         self.toggle_button = QPushButton('Toggle vertices/faces', self)
         self.toggle_button.clicked.connect(self.opengl_widget.toggle_display_mode)
+        self.side_layout.addWidget(self.toggle_button)
+
+        #Toggle button faces/vertices
+        self.toggle_button = QPushButton('Toggle edges; causes lag for high F-count', self)
+        self.toggle_button.clicked.connect(self.opengl_widget.toggle_edges)
         self.side_layout.addWidget(self.toggle_button)
 
         #Text boxes to display vertices and faces count
