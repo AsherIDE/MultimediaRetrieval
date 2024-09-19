@@ -164,3 +164,4 @@ cython_debug/
 # Ignore .obj files
 *.obj
 ShapeDatabase_INFOMR-master
+ShapeDatabase_INFOMR-resampled
