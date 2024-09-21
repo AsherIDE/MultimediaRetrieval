@@ -9,7 +9,7 @@ import pymeshlab as ml
 # meshFile --> file path to object file from root folder
 # aim --> desired amount of vertices that the object will end up having
 # deviation --> tolerated amount of deviation from the aim (decimal)
-def resample(meshFile, meshClass, aim=1000, deviation=0.9):
+def resample(meshFile, meshClass, aim=4000, deviation=0.9):
     # create class resampled folder if there isnt one
     classfolderPath = os.path.join("ShapeDatabase_INFOMR-resampled", meshClass)
     pathlib.Path(classfolderPath).mkdir(exist_ok=True) 
@@ -17,35 +17,41 @@ def resample(meshFile, meshClass, aim=1000, deviation=0.9):
     # mesh initiation
     ms = ml.MeshSet()
     ms.load_new_mesh("ShapeDatabase_INFOMR-master/" + meshClass + "/" + meshFile)
-    m = ms.current_mesh()
-
-    vertices =  m.vertex_number()
+    
+    vertices =  ms.current_mesh().vertex_number()
 
 
     # ------ Upsampling ------
     if vertices < (aim * deviation):
         # print(f"[Started] upsample: {meshFile} with {vertices} vertices")
+        
+        # create more vertices and faces
+        previous_vertices = vertices
+        while vertices < (aim * deviation) and previous_vertices <= vertices:
+            
+            # connect non-connected parts of the mesh
+            ms.apply_filter("meshing_repair_non_manifold_edges")
+            ms.apply_filter("meshing_repair_non_manifold_vertices")
 
+            ms.apply_filter("meshing_surface_subdivision_catmull_clark")
+
+            # cluster vertices together again (to patch holes that prevent this program from saving)
+            ms.apply_filter("meshing_decimation_clustering")
+        
+            previous_vertices = vertices
+            vertices =  ms.current_mesh().vertex_number()
+            # print(f"[While] upsample: {vertices} vertices")
+        
+        # print(f"[Finished] upsample: {meshFile} with {vertices} vertices")
+
+    else:
         # connect non-connected parts of the mesh
         ms.apply_filter("meshing_repair_non_manifold_edges")
         ms.apply_filter("meshing_repair_non_manifold_vertices")
-        
-        # create more vertices and faces
-        # TODO: while weg?
-        # while vertices < (aim * deviation):
-        # print("test")
-        ms.apply_filter("meshing_surface_subdivision_catmull_clark")
-        
-        vertices =  ms.current_mesh().vertex_number()
-            # print(f"[While] upsample: {vertices} vertices")
-        
-    #     print(f"[Finished] upsample: {meshFile} with {vertices} vertices")
 
-    # else:
-    #      print(f"[Skipped] upsample: {meshFile} with {vertices} vertices")
+        # print(f"[Skipped] upsample: {meshFile} with {vertices} vertices")
 
-    # cluster vertices together again (to patch holes that prevent this program from saving)
-    ms.apply_filter("meshing_decimation_clustering")
+    vertices =  ms.current_mesh().vertex_number()
 
     # ------ Downsampling ------
     if vertices > ((aim * (1 - deviation)) + aim):
@@ -60,27 +66,38 @@ def resample(meshFile, meshClass, aim=1000, deviation=0.9):
             vertices =  ms.current_mesh().vertex_number()
             # print(f"[While] downsample: {vertices} vertices")
 
+            # only decimate if we are looping again
+            if (ms.current_mesh().vertex_number() > aim):
+                # cluster vertices together again (to patch holes that prevent this program from saving)
+                ms.apply_filter("meshing_decimation_clustering")
+
             # keep on reestimating the number of faces
             numFaces = numFaces - (ms.current_mesh().vertex_number() - aim)
 
-        print(f"[Finished] downsample: {meshFile} with {vertices} vertices")
+    #     print(f"[Finished] downsample: {meshFile} with {vertices} vertices")
     
-    else:
-        print(f"[Skipped] downsample: {meshFile} with {vertices} vertices")
+    # else:
+    #     print(f"[Skipped] downsample: {meshFile} with {vertices} vertices")
 
     # save the resampled shape
     ms.save_current_mesh("ShapeDatabase_INFOMR-resampled/" + meshClass + "/" + meshFile)
 
+    print(f"[Finished] resample: {meshFile} with {vertices} vertices")
 
 
 ############################################################################################
 # The resampling engine (resamples every object file from the dataset)
 ############################################################################################
 
-# # extremely small birb object example
+# # extremely small birb object example (requires multiple upsampling loops)
 # test_obj_name = "m43.obj"
 # test_class_name = "Bird"
-# resample(test_obj_name, test_class_name, aim=1000, deviation=0.9)
+# resample(test_obj_name, test_class_name, aim=4000, deviation=0.9)
+
+# extremely large tree object example  (requires multiple downsampling loops)
+# test_obj_name = "D00096.obj"
+# test_class_name = "Tree"
+# resample(test_obj_name, test_class_name, aim=4000, deviation=0.9)
 
 
 # create main resampled folder if there isnt one
@@ -97,7 +114,10 @@ for idx, class_name in enumerate(dataset):
     print(f"----------------------------[ Class {class_name} ({idx + 1}/{len(dataset)}) ]----------------------------")
     
     for obj_name in class_folder:
-        resample(obj_name, class_name, aim=1000, deviation=0.9)
+        resample(obj_name, class_name, aim=4000, deviation=0.9)
 
     print("\n")
     
+print(f"[Finished] resample: script done")
+
+# TODO: stierf na [Finished] resample: D00106.obj with 107 vertices (HumanHead)
