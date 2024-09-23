@@ -20,36 +20,60 @@ def load_obj(filename):
 ############################################################################################
 # Create a dataframe with object information (step 2.1)
 ############################################################################################
+def analyze_dataset(dataset, folder):
+    # get bounding box from vertices
+    def vertices_to_bbox(vertices):
+        xs = [v[0] for v in vertices]
+        ys = [v[1] for v in vertices]
+        zs = [v[2] for v in vertices]
 
-# get bounding box from vertices
-def vertices_to_bbox(vertices):
-    xs = [v[0] for v in vertices]
-    ys = [v[1] for v in vertices]
-    zs = [v[2] for v in vertices]
+        return str(min(xs)) + " " + str(max(xs)) + " " + str(min(ys)) + " " + str(max(ys)) + " " + str(min(zs)) + " " + str(max(zs))
 
-    return str(min(xs)) + " " + str(max(xs)) + " " + str(min(ys)) + " " + str(max(ys)) + " " + str(min(zs)) + " " + str(max(zs))
+    # temporarily store [name, class, faces, vertices, bounding box]
+    dataset_analyzed = []
 
-# access dataset folder with class folders
-dataset = os.listdir("ShapeDatabase_INFOMR-master")
-dataset.remove("class_sizes_plot.png")
-dataset.remove("stats.txt")
+    # analyze shapes -> name, class, vertices, faces, bounding box [xmin, xmax, ymin, ymax, zmin, zmax]
+    for class_name in dataset:
+        class_folder = os.listdir(folder + "/" + class_name)
 
-# temporarily store [name, class, faces, vertices, bounding box]
-dataset_analyzed = []
+        for obj_name in class_folder:
+            vertices, faces = load_obj(folder + "/" + class_name + "/" + obj_name)
+            
+            dataset_analyzed.append([obj_name, class_name, len(vertices), len(faces), vertices_to_bbox(vertices)])
 
-# analyze shapes -> name, class, vertices, faces, bounding box [xmin, xmax, ymin, ymax, zmin, zmax]
-for class_name in dataset:
-    class_folder = os.listdir("ShapeDatabase_INFOMR-master/" + class_name)
+    df = pd.DataFrame(dataset_analyzed, columns=["name", "class", "vertices", "faces", "bbox"])
 
-    for obj_name in class_folder:
-        vertices, faces = load_obj("ShapeDatabase_INFOMR-master/" + class_name + "/" + obj_name)
-        
-        dataset_analyzed.append([obj_name, class_name, len(vertices), len(faces), vertices_to_bbox(vertices)])
+    return df
 
-# create the objStats.csv file
-df = pd.DataFrame(dataset_analyzed, columns=["name", "class", "vertices", "faces", "bbox"])
-df.to_csv("steps/step2/objStats.csv", index=False)
 
-# read the objStats.csv file
-df_found = pd.read_csv("steps/step2/objStats.csv")
-print(df_found)
+# # ------ Original dataset ------
+
+# # access dataset folder with class folders
+# folder = "ShapeDatabase_INFOMR-master"
+# dataset = os.listdir(folder)
+# dataset.remove("class_sizes_plot.png")
+# dataset.remove("stats.txt")
+
+# # create the objStats.csv file
+# df = analyze_dataset(dataset, folder)
+# df.to_csv("steps/step2/objStats.csv", index=False)
+
+# # read the objStats.csv file
+# df_found = pd.read_csv("steps/step2/objStats.csv")
+# print(df_found)
+
+
+
+# # ------ Resampled dataset ------
+
+# # access dataset folder with class folders
+# folder = "ShapeDatabase_INFOMR-resampled"
+# dataset = os.listdir(folder)
+
+# # create the objStats.csv file
+# df = analyze_dataset(dataset, folder)
+# df.to_csv("steps/step2/objStatsResampled.csv", index=False)
+
+# # read the objStats.csv file
+# df_found = pd.read_csv("steps/step2/objStatsResampled.csv")
+# print(df_found)

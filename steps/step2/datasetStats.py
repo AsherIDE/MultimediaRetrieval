@@ -8,10 +8,10 @@ import numpy as np
 # To gain insight into the outliers of classes (step 2.2)
 ############################################################################################
 
-def get_class_barplot(class_name, sd=2, col="faces"):
+def get_class_barplot(class_name, csv_name, sd=2, col="faces"):
 
     # get stats on selected class
-    objStats = pd.read_csv("steps/step2/objStats.csv")
+    objStats = pd.read_csv(csv_name)
     class_objStats = objStats[objStats["class"] == class_name].sort_values([col], ascending=[False])
 
     # get outliers
@@ -63,7 +63,7 @@ def get_class_barplot(class_name, sd=2, col="faces"):
         y=mean + (mean * 0.1),
         xref="x",
         yref="y",
-        text=round(mean),
+        text=f"μ = {round(mean)}, σ = {round(std, 2)}",
         showarrow=True,
         font=dict(
             family="Courier New, monospace",
@@ -83,12 +83,23 @@ def get_class_barplot(class_name, sd=2, col="faces"):
         bgcolor="#ff7f0e",
         opacity=0.8
     )
-    fig.update_layout(title_text=f"Amount of {col} for every object in class {class_name} with sd = {sd}")
+    fig.update_layout(title_text=f"Amount of {col} for every object in class {class_name} with sd = {sd} from mean")
     fig.show()
 
 
 
 # testing area
-get_class_barplot("Bicycle", sd=2, col="faces")
+objClass = "Sign"
+sd = 1
+col = "vertices" #"faces"
+
+get_class_barplot(objClass, "steps/step2/objStats.csv", sd, col)
+get_class_barplot(objClass, "steps/step2/objStatsResampled3k.csv", sd, col)
+get_class_barplot(objClass, "steps/step2/objStatsResampled4k.csv", sd, col)
+get_class_barplot(objClass, "steps/step2/objStatsResampled4kv2.csv", sd, col)
 # RectangleTable
 # Bicycle
+# Tree
+# House
+# Sign
+# Car, Hand -> 1k aim almost executed perfectly
