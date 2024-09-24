@@ -99,25 +99,32 @@ def resample(meshFile, meshClass, aim=4000, deviation=0.9):
 # test_class_name = "Tree"
 # resample(test_obj_name, test_class_name, aim=4000, deviation=0.9)
 
+# small bike example for paper
+# test_obj_name = "m1472.obj"
+# test_class_name = "Bicycle"
+# resample(test_obj_name, test_class_name, aim=4000, deviation=0.9)
 
-# create main resampled folder if there isnt one
-pathlib.Path("ShapeDatabase_INFOMR-resampled").mkdir(exist_ok=True) 
+# item that was resampled to a way too low value (quadric edge collapses only once, so we can not help it)
+# test_obj_name = "D00683.obj"
+# test_class_name = "Spoon"
+# resample(test_obj_name, test_class_name, aim=4000, deviation=0.9)
 
-# access dataset folder with class folders
-dataset = os.listdir("ShapeDatabase_INFOMR-master")
-dataset.remove("class_sizes_plot.png")
-dataset.remove("stats.txt")
+# # create main resampled folder if there isnt one
+# pathlib.Path("ShapeDatabase_INFOMR-resampled").mkdir(exist_ok=True) 
 
-for idx, class_name in enumerate(dataset):
-    class_folder = os.listdir("ShapeDatabase_INFOMR-master/" + class_name)
+# # access dataset folder with class folders
+# dataset = os.listdir("ShapeDatabase_INFOMR-master")
+# dataset.remove("class_sizes_plot.png")
+# dataset.remove("stats.txt")
 
-    print(f"----------------------------[ Class {class_name} ({idx + 1}/{len(dataset)}) ]----------------------------")
+# for idx, class_name in enumerate(dataset):
+#     class_folder = os.listdir("ShapeDatabase_INFOMR-master/" + class_name)
+
+#     print(f"----------------------------[ Class {class_name} ({idx + 1}/{len(dataset)}) ]----------------------------")
     
-    for obj_name in class_folder:
-        resample(obj_name, class_name, aim=4000, deviation=0.9)
+#     for obj_name in class_folder:
+#         resample(obj_name, class_name, aim=4000, deviation=0.9)
 
-    print("\n")
+#     print("\n")
     
-print(f"[Finished] resample: script done")
-
-# TODO: stierf na [Finished] resample: D00106.obj with 107 vertices (HumanHead)
+# print(f"[Finished] resample: script done")
