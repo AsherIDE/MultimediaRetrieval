@@ -75,18 +75,14 @@ class ObjectCalculations:
         # Step 1: Compute the covariance matrix
         mean = np.mean(self.vertices, axis=0)
         centered_points = self.vertices - mean
-        covariance_matrix = np.cov(centered_points, rowvar=False)
-        
+        covariance_matrix = np.cov(centered_points, rowvar=False)       
         # Step 2: Eigen decomposition
-        eigenvalues, eigenvectors = np.linalg.eigh(covariance_matrix)
-        
+        eigenvalues, eigenvectors = np.linalg.eigh(covariance_matrix)        
         # Step 3: Rotate the points to align with the principal axes
-        rotated_points = np.dot(centered_points, eigenvectors)
-        
+        rotated_points = np.dot(centered_points, eigenvectors)        
         # Step 4: Find the extents
         min_extents = np.min(rotated_points, axis=0)
-        max_extents = np.max(rotated_points, axis=0)
-        
+        max_extents = np.max(rotated_points, axis=0)        
         # Step 5: Calculate the volume of the OBB
         obb_extents = max_extents - min_extents
         obb_volume = np.prod(obb_extents)
