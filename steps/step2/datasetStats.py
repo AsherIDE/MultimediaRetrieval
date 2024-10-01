@@ -89,13 +89,13 @@ def get_class_barplot(class_name, csv_name, sd=2, col="faces"):
 
 
 # testing area
-objClass = "Sign"
+objClass = "Spoon"
 sd = 1
 col = "vertices" #"faces"
 
 get_class_barplot(objClass, "steps/step2/objStats.csv", sd, col)
-get_class_barplot(objClass, "steps/step2/objStatsResampled3k.csv", sd, col)
-get_class_barplot(objClass, "steps/step2/objStatsResampled4k.csv", sd, col)
+# get_class_barplot(objClass, "steps/step2/objStatsResampled3k.csv", sd, col)
+# get_class_barplot(objClass, "steps/step2/objStatsResampled4k.csv", sd, col)
 get_class_barplot(objClass, "steps/step2/objStatsResampled4kv2.csv", sd, col)
 # RectangleTable
 # Bicycle
