@@ -12,6 +12,7 @@ class ObjectCalculations:
         self.convex_hull_volume = self.calculate_convex_hull_volume()
         self.eigenvalues = self.calculate_eigenvalues()
         self.obb_volume = self.calculate_obb_volume()
+        self.diameterLength = self.diameter()
         #GlobalDescriptorsForTesting
         numberSamples = 1000
         self.A3 = self.compute_A3(numberSamples)
@@ -63,12 +64,16 @@ class ObjectCalculations:
         return float(f"{self.volume / self.obb_volume:.5f}")
 
     def diameter(self):
+        hull = ConvexHull(self.vertices)
+        hull_vertices = self.vertices[hull.vertices]
+        # Find the maximum distance between any pair of hull vertices
         max_distance = 0
-        for i in range(len(self.vertices)):
-            for j in range(i + 1, len(self.vertices)):
-                distance = np.linalg.norm(self.vertices[i] - self.vertices[j])
+        num_hull_vertices = len(hull_vertices)
+        for i in range(num_hull_vertices):
+            for j in range(i + 1, num_hull_vertices):
+                distance = np.linalg.norm(hull_vertices[i] - hull_vertices[j])
                 if distance > max_distance:
-                    max_distance = distance
+                    max_distance = distance        
         return max_distance
 
     def convexity(self):
@@ -97,14 +102,20 @@ class ObjectCalculations:
     def calculate_angle(self, v1, v2, v3):
         # Calculate vectors
         vec1 = v2 - v1
-        vec2 = v3 - v1
+        vec2 = v3 - v1        
+        # Calculate the magnitudes of the vectors
+        norm_vec1 = np.linalg.norm(vec1)
+        norm_vec2 = np.linalg.norm(vec2)    
+        # Check for zero magnitude to avoid division by zero
+        if norm_vec1 == 0 or norm_vec2 == 0:
+            return 0.0  # or some other default value or handling       
         # Calculate the cosine of the angle using dot product
-        cos_angle = np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2)) 
+        cos_angle = np.dot(vec1, vec2) / (norm_vec1 * norm_vec2)        
         # Ensure the cosine value is within the valid range [-1, 1]
-        cos_angle = np.clip(cos_angle, -1.0, 1.0)
+        cos_angle = np.clip(cos_angle, -1.0, 1.0)        
         # Calculate the angle in radians and then convert to degrees
         angle = np.arccos(cos_angle)
-        angle_degrees = np.degrees(angle)
+        angle_degrees = np.degrees(angle)        
         return angle_degrees
 
     def compute_A3(self, num_samples):

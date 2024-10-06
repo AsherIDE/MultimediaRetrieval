@@ -246,7 +246,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('Object testing')
         self.setGeometry(100, 100, 900, 600)
         self.opengl_widget = OpenGLWidget(self)
-        self.shape = None
+        self.shape = None        
     
         # Create side panel with buttons
         self.side_panel = QWidget(self)
@@ -356,7 +356,7 @@ class MainWindow(QMainWindow):
         self.rectangularity_display.setText(f'3D Rectangularity: {self.shape.rectangularity()}')
 
     def calcDiameter(self):
-        self.diameter_display.setText('Diameter:Breaks')
+        self.diameter_display.setText(f'Diameter: {self.shape.diameter()}')
 
     def calcConvexity(self):
         self.convexity_display.setText(f'Convexity: {self.shape.convexity()}')
@@ -381,6 +381,7 @@ class MainWindow(QMainWindow):
             self.calcDiameter()
             self.calcConvexity()
             self.calcEccentricity()
+            self.calcDiameter()
 
     def show_histograms(self):
         if self.shape:
