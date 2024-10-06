@@ -1,16 +1,25 @@
 import numpy as np
+import random
 from scipy.spatial import ConvexHull
 from math import pi
 
 class ObjectCalculations:
     def __init__(self, obj_file):
-        self.vertices, self.faces, self.SurfaceArea, self.volume = self.load_obj(obj_file)
+        self.vertices, self.faces, self.SurfaceArea, self.volume, self.barycenter = self.load_obj(obj_file)
+        #LocalDescriptorsForTesting
         self.surfaceArea = self.calcSurfaceArea()
         self.objCompactness = self.calcCompactness()
         self.convex_hull_volume = self.calculate_convex_hull_volume()
         self.eigenvalues = self.calculate_eigenvalues()
         self.obb_volume = self.calculate_obb_volume()
-
+        #GlobalDescriptorsForTesting
+        numberSamples = 1000
+        self.A3 = self.compute_A3(numberSamples)
+        self.D1 = self.compute_D1(numberSamples)
+        self.D2 = self.compute_D2(numberSamples)
+        self.D3 = self.compute_D3(numberSamples)
+        self.D4 = self.compute_D4(numberSamples)
+        
     def load_obj(self, obj_file):
         vertices = []
         faces = []
@@ -30,7 +39,7 @@ class ObjectCalculations:
                     SurfaceArea += triangle_area
                     # Volume calculation using the signed volume of the tetrahedron
                     volume += np.dot(v0, np.cross(v1, v2)) / 6.0
-        return np.array(vertices), np.array(faces), SurfaceArea, abs(volume)
+        return np.array(vertices), np.array(faces), SurfaceArea, abs(volume), np.mean(vertices, axis=0)
 
     def calcSurfaceArea(self):
         return float(f"{self.SurfaceArea:.5f}")
@@ -49,9 +58,6 @@ class ObjectCalculations:
         cov_matrix = np.cov(self.vertices.T)
         eigenvalues, _ = np.linalg.eig(cov_matrix)
         return eigenvalues
-
-    def compactness(self):
-        return (self.volume ** 2) / (self.SurfaceArea ** 3)
 
     def rectangularity(self):
         return float(f"{self.volume / self.obb_volume:.5f}")
@@ -85,6 +91,92 @@ class ObjectCalculations:
         max_extents = np.max(rotated_points, axis=0)        
         # Step 5: Calculate the volume of the OBB
         obb_extents = max_extents - min_extents
-        obb_volume = np.prod(obb_extents)
-        
+        obb_volume = np.prod(obb_extents) 
         return obb_volume
+    
+    def calculate_angle(self, v1, v2, v3):
+        # Calculate vectors
+        vec1 = v2 - v1
+        vec2 = v3 - v1
+        # Calculate the cosine of the angle using dot product
+        cos_angle = np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2)) 
+        # Ensure the cosine value is within the valid range [-1, 1]
+        cos_angle = np.clip(cos_angle, -1.0, 1.0)
+        # Calculate the angle in radians and then convert to degrees
+        angle = np.arccos(cos_angle)
+        angle_degrees = np.degrees(angle)
+        return angle_degrees
+
+    def compute_A3(self, num_samples):
+        angles = []
+        for _ in range(num_samples):
+            # Randomly select three distinct vertices
+            v1, v2, v3 = random.sample(list(self.vertices), 3)
+            # Calculate the angle between the three vertices
+            angle = self.calculate_angle(np.array(v1), np.array(v2), np.array(v3))
+            angles.append(angle)
+        return angles
+
+    def compute_D1(self, num_samples):
+        barycenter = self.barycenter
+        distances = []
+        for _ in range(num_samples):
+            # Randomly select a vertex
+            random_vertex = random.choice(self.vertices)
+            # Calculate the distance between the barycenter and the random vertex
+            distance = np.linalg.norm(barycenter - random_vertex)
+            distances.append(distance)    
+        return distances
+    
+    def compute_D2(self, num_samples):
+        distances = []
+        for _ in range(num_samples):
+            # Randomly select two distinct vertices
+            v1, v2 = random.sample(list(self.vertices), 2)
+            # Calculate the distance between the two vertices
+            distance = np.linalg.norm(np.array(v1) - np.array(v2))
+            distances.append(distance)      
+        return distances
+    
+    def calculate_triangle_area(self, v1, v2, v3):
+        # Calculate the area of the triangle using the cross product
+        vec1 = np.array(v2) - np.array(v1)
+        vec2 = np.array(v3) - np.array(v1)
+        cross_product = np.cross(vec1, vec2)
+        area = np.linalg.norm(cross_product) / 2
+        return area
+
+    def compute_D3(self, num_samples):
+        areas = []
+        for _ in range(num_samples):
+            # Randomly select three distinct vertices
+            v1, v2, v3 = random.sample(list(self.vertices), 3)            
+            # Calculate the area of the triangle formed by the three vertices
+            area = self.calculate_triangle_area(v1, v2, v3)
+            areas.append(np.sqrt(area))
+        return areas
+    
+    def calculate_tetrahedron_volume(self, v1, v2, v3, v4):
+        # Calculate the volume of the tetrahedron using the determinant
+        matrix = np.array([v2 - v1, v3 - v1, v4 - v1])
+        volume = np.abs(np.linalg.det(matrix)) / 6
+        return volume
+
+    def compute_D4(self, num_samples):
+        volumes = []      
+        for _ in range(num_samples):
+            # Randomly select four distinct vertices
+            v1, v2, v3, v4 = random.sample(list(self.vertices), 4)           
+            # Calculate the volume of the tetrahedron formed by the four vertices
+            volume = self.calculate_tetrahedron_volume(v1, v2, v3, v4)
+            volumes.append(np.cbrt(volume))        
+        return volumes
+
+    def compute_histogram(self, descriptor_func, num_samples, num_bins):
+            #GrabData
+            values = descriptor_func(num_samples)            
+            #Fixed bins
+            histogram, bin_edges = np.histogram(values, bins=num_bins)            
+            #Normalize
+            histogram = histogram / np.sum(histogram)            
+            return histogram

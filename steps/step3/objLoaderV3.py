@@ -1,12 +1,16 @@
 import sys
 import os
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QLineEdit,QSpacerItem, QHBoxLayout, QLabel, QSizePolicy
+import random
+import numpy as np
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QLineEdit, QSpacerItem, QHBoxLayout, QLabel, QSizePolicy
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtOpenGL import QGLWidget
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from objectCalculator import ObjectCalculations  # Import the class from the other file
+
 
 
 ############################################################################################
@@ -200,6 +204,40 @@ class OpenGLWidget(QGLWidget):
 
 
 ############################################################################################
+# Histogram window showcasing all the distributions of the object
+############################################################################################
+class HistogramWindow(QWidget):
+    def __init__(self, obj_calc):
+        super().__init__()
+        self.obj_calc = obj_calc
+        self.initUI()
+
+    def initUI(self):
+        layout = QVBoxLayout()
+        num_samples = 1000
+        num_bins = 30
+        # Create histograms for each descriptor
+        self.create_histogram(self.obj_calc.compute_histogram(self.obj_calc.compute_A3, num_samples, num_bins), 'A3 angle between 3 random vertices', 'Angle (degrees)', layout)
+        self.create_histogram(self.obj_calc.compute_histogram(self.obj_calc.compute_D1, num_samples, num_bins), 'D1 distance between barycenter and random vertex', 'Distance', layout)
+        self.create_histogram(self.obj_calc.compute_histogram(self.obj_calc.compute_D2, num_samples, num_bins), 'D2 distance between 2 random vertices', 'Distance', layout)
+        self.create_histogram(self.obj_calc.compute_histogram(self.obj_calc.compute_D3, num_samples, num_bins), 'D3 square root of area of triangle given by 3 random vertices', 'Square Root of Area', layout)
+        self.create_histogram(self.obj_calc.compute_histogram(self.obj_calc.compute_D4, num_samples, num_bins), 'D4 cube root of volume of tetrahedron formed by 4 random vertices', 'Cube Root of Volume', layout)    
+        self.setLayout(layout)
+        self.setWindowTitle('Histograms of Descriptors')
+        self.show()
+
+    def create_histogram(self, histogram, title, xlabel, layout):
+        fig, ax = plt.subplots()
+        ax.bar(range(len(histogram)), histogram, width=1.0, edgecolor='black')
+        ax.set_title(title)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel('Normalized Frequency')
+        
+        canvas = FigureCanvas(fig)
+        layout.addWidget(canvas)
+
+
+############################################################################################
 # Window (in which OpenGL widget exists)
 ############################################################################################
 class MainWindow(QMainWindow):
@@ -251,6 +289,11 @@ class MainWindow(QMainWindow):
         self.faces_display.setReadOnly(True)
         self.side_layout.addWidget(self.faces_display)
 
+        # Button to show histograms
+        self.histogram_button = QPushButton('Show Histograms', self)
+        self.histogram_button.clicked.connect(self.show_histograms)
+        self.side_layout.addWidget(self.histogram_button)
+
         # Main layout + spacing the buttons
         self.side_layout.addStretch()
         main_layout = QHBoxLayout()
@@ -300,7 +343,9 @@ class MainWindow(QMainWindow):
         container = QWidget()
         container.setLayout(main_layout_with_bottom)
         self.setCentralWidget(container)
-
+############################################################################################
+#Functions for local descriptors and global descriptors as histograms
+############################################################################################
     def calcSurfaceArea(self):
         self.surfaceArea_display.setText(f'Surface Area: {self.shape.surfaceArea}')
 
@@ -319,7 +364,7 @@ class MainWindow(QMainWindow):
     def calcEccentricity(self):
         self.eccentricity_display.setText(f'Eccentricity: {self.shape.eccentricity()}')
 
-    #Function for opening the file and setting all stats according to the file
+    # Function for opening the file and setting all stats according to the file
     def open_file_dialog(self):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self, "Open OBJ File", "", "OBJ Files (*.obj);;All Files (*)", options=options)
@@ -329,12 +374,18 @@ class MainWindow(QMainWindow):
             self.vertices_display.setText(str(self.opengl_widget.get_vertices_count()))
             self.faces_display.setText(str(self.opengl_widget.get_faces_count()))
             self.shape = ObjectCalculations(fileName)  # Assuming you have a method to load the shape
+            # Getting the stats
             self.calcSurfaceArea()
             self.calcCompactness()
             self.calcRectangularity()
             self.calcDiameter()
             self.calcConvexity()
             self.calcEccentricity()
+
+    def show_histograms(self):
+        if self.shape:
+            self.histogram_window = HistogramWindow(self.shape)
+            self.histogram_window.show()
 
 # execution of the program
 if __name__ == '__main__':
