@@ -1,18 +1,24 @@
 import numpy as np
 import random
+import csv
+import os
 from scipy.spatial import ConvexHull
 from math import pi
 
 class ObjectCalculations:
     def __init__(self, obj_file):
+        self.obj_file = obj_file
         self.vertices, self.faces, self.SurfaceArea, self.volume, self.barycenter = self.load_obj(obj_file)
         #LocalDescriptorsForTesting
-        self.surfaceArea = self.calcSurfaceArea()
-        self.objCompactness = self.calcCompactness()
         self.convex_hull_volume = self.calculate_convex_hull_volume()
         self.eigenvalues = self.calculate_eigenvalues()
         self.obb_volume = self.calculate_obb_volume()
-        self.diameterLength = self.diameter()
+        self.surfaceAreaObj = self.calcSurfaceArea()
+        self.compactnessObj = self.calcCompactness()
+        self.rectangularityObj = self.rectangularity()
+        self.diameterObj = self.diameter()
+        self.convexityObj = self.convexity()
+        self.eccentricityObj = self.eccentricity()                
         #GlobalDescriptorsForTesting
         numberSamples = 1000
         self.A3 = self.compute_A3(numberSamples)
@@ -21,6 +27,28 @@ class ObjectCalculations:
         self.D3 = self.compute_D3(numberSamples)
         self.D4 = self.compute_D4(numberSamples)
         
+        
+    def write_to_csv(self):
+        # Summarize the lists by taking their mean
+        last_part = os.path.basename(self.obj_file)
+    
+        # Get the part before the last part (directory name)
+        second_to_last_part = os.path.basename(os.path.dirname(self.obj_file))
+        data = [
+            last_part, second_to_last_part, self.surfaceAreaObj, self.compactnessObj, self.rectangularityObj, self.diameterObj, self.convexityObj, self.eccentricityObj, self.A3, self.D1, self.D2, self.D3, self.D4            
+        ]
+        file_path = 'steps\step3\objDescriptors.csv'
+        # Check if the file exists to write headers
+        file_exists = os.path.isfile(file_path)    
+        # Open the file in append mode
+        with open(file_path, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            # Write the headers if the file is new
+            if not file_exists:
+                writer.writerow(['name', 'class', 'surfaceAreaObj', 'compactnessObj', 'rectangularityObj', 'diameterObj', 'convexityObj', 'eccentricityObj', 'A3', 'D1', 'D2', 'D3', 'D4'])
+            # Write the data as a new row
+            writer.writerow(data)
+
     def load_obj(self, obj_file):
         vertices = []
         faces = []
@@ -74,7 +102,7 @@ class ObjectCalculations:
                 distance = np.linalg.norm(hull_vertices[i] - hull_vertices[j])
                 if distance > max_distance:
                     max_distance = distance        
-        return max_distance
+        return float(f"{max_distance:.5f}")
 
     def convexity(self):
         return float(f"{self.volume / self.convex_hull_volume :.5f}")

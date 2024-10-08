@@ -347,10 +347,10 @@ class MainWindow(QMainWindow):
 #Functions for local descriptors and global descriptors as histograms
 ############################################################################################
     def calcSurfaceArea(self):
-        self.surfaceArea_display.setText(f'Surface Area: {self.shape.surfaceArea}')
+        self.surfaceArea_display.setText(f'Surface Area: {self.shape.surfaceAreaObj}')
 
     def calcCompactness(self):
-        self.compactness_display.setText(f'Compactness: {self.shape.objCompactness}')
+        self.compactness_display.setText(f'Compactness: {self.shape.compactnessObj}')
 
     def calcRectangularity(self):
         self.rectangularity_display.setText(f'3D Rectangularity: {self.shape.rectangularity()}')
@@ -373,7 +373,7 @@ class MainWindow(QMainWindow):
             self.file_display.setText(fileName)
             self.vertices_display.setText(str(self.opengl_widget.get_vertices_count()))
             self.faces_display.setText(str(self.opengl_widget.get_faces_count()))
-            self.shape = ObjectCalculations(fileName)  # Assuming you have a method to load the shape
+            self.shape = ObjectCalculations(fileName)
             # Getting the stats
             self.calcSurfaceArea()
             self.calcCompactness()
@@ -382,6 +382,7 @@ class MainWindow(QMainWindow):
             self.calcConvexity()
             self.calcEccentricity()
             self.calcDiameter()
+            self.shape.write_to_csv()
 
     def show_histograms(self):
         if self.shape:

@@ -141,13 +141,13 @@ class ShapeNormalizer:
 #either choose process all shapes or normalize single file depending on what you need.  Change input and output folders as well. 1
 
 
-#input_folder = r'C:\Universiteit\HCI\MultimediaRetrieval\ShapeDatabase_INFOMR-resampled'
-#output_folder = r'C:\Universiteit\HCI\MultimediaRetrieval\NormalizedShapes-resampled' 
+input_folder = r'C:\Users\axelv\OneDrive\Desktop\MediaRetrieval\MultimediaRetrieval\ShapeDatabase_INFOMR-resampled'
+output_folder = r'C:\Users\axelv\OneDrive\Desktop\MediaRetrieval\MultimediaRetrieval\NormalizedShapes-resampled' 
 
 
-single_output_folder = r'C:\Universiteit\HCI\MultimediaRetrieval\SingleNormalizedShapes'
+#single_output_folder = r'C:\Universiteit\HCI\MultimediaRetrieval\SingleNormalizedShapes'
 
 
 normalizer = ShapeNormalizer()
-normalizer.select_and_normalize_single_file(single_output_folder) 
-#normalizer.process_all_shapes(input_folder, output_folder)
+#normalizer.select_and_normalize_single_file(single_output_folder) 
+normalizer.process_all_shapes(input_folder, output_folder)
