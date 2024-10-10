@@ -238,3 +238,8 @@ class ObjectCalculations:
             #Normalize
             histogram = histogram / np.sum(histogram)            
             return histogram
+    
+# Example usage:
+obj_calc = ObjectCalculations("NormalizedShapes-resampled\AircraftBuoyant\m1337_normalized.obj")
+descriptors = obj_calc.get_descriptors()
+print(descriptors)
