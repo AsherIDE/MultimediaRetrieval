@@ -169,3 +169,7 @@ ShapeDatabase_INFOMR-resampled3k
 ShapeDatabase_INFOMR-resampled4k
 NormalizedShapes-resampled
 objDescriptors.csv
+
+# Very large .csv files
+descriptorsResampledNormalisedData.csv
+searchDescriptorsNormalized.csv

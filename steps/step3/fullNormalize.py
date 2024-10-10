@@ -103,37 +103,37 @@ class ShapeNormalizer:
             print(f"Saved normalized file to {output_filepath}")
             print('-' * 40)
 
-    def select_and_normalize_single_file(self, output_folder):
+    def select_and_normalize_single_file(self, output_folder, file_path):
         """Allow user to select a single .obj file and normalize it."""
-        # Hide the main tkinter window
-        root = Tk()
-        root.withdraw()
+        # # Hide the main tkinter window
+        # root = Tk()
+        # root.withdraw()
 
-        # Open file dialog to select a file
-        file_path = askopenfilename(
-            filetypes=[("OBJ files", "*.obj")],
-            title="Select an OBJ file"
-        )
+        # # Open file dialog to select a file
+        # file_path = askopenfilename(
+        #     filetypes=[("OBJ files", "*.obj")],
+        #     title="Select an OBJ file"
+        # )
 
-        if not file_path:
-            print("No file selected!")
-            return
+        # if not file_path:
+        #     print("No file selected!")
+        #     return
 
         # Process the selected file
-        print(f"Processing {file_path}")
+        # print(f"Processing {file_path}")
         self.load_obj_file(file_path)
 
         # Normalize the shape
         self.normalize_shape()
 
         # Create output file path
-        filename = os.path.basename(file_path).replace('.obj', '_normalized.obj')
+        filename = os.path.basename(file_path)#.replace('.obj', '_normalized.obj')
         output_filepath = os.path.join(output_folder, filename)
 
         # Save normalized shape
         os.makedirs(output_folder, exist_ok=True)
         self.save_obj_file(output_filepath)
-        print(f"Saved normalized file to {output_filepath}")
+        print(f"[Finished] normalization: {file_path}")
 
 
 
@@ -141,13 +141,13 @@ class ShapeNormalizer:
 #either choose process all shapes or normalize single file depending on what you need.  Change input and output folders as well. 1
 
 
-input_folder = r'C:\Users\axelv\OneDrive\Desktop\MediaRetrieval\MultimediaRetrieval\ShapeDatabase_INFOMR-resampled'
-output_folder = r'C:\Users\axelv\OneDrive\Desktop\MediaRetrieval\MultimediaRetrieval\NormalizedShapes-resampled' 
+# input_folder = r'C:\Users\axelv\OneDrive\Desktop\MediaRetrieval\MultimediaRetrieval\ShapeDatabase_INFOMR-resampled'
+# output_folder = r'C:\Users\axelv\OneDrive\Desktop\MediaRetrieval\MultimediaRetrieval\NormalizedShapes-resampled' 
 
 
-#single_output_folder = r'C:\Universiteit\HCI\MultimediaRetrieval\SingleNormalizedShapes'
+# single_output_folder = r'C:\Users\Asher\Documents\School\HCI\MultimediaRetrieval\MultimediaRetrieval\steps\step4'
 
 
-normalizer = ShapeNormalizer()
-#normalizer.select_and_normalize_single_file(single_output_folder) 
-normalizer.process_all_shapes(input_folder, output_folder)
+# normalizer = ShapeNormalizer()
+# normalizer.select_and_normalize_single_file(single_output_folder) 
+# normalizer.process_all_shapes(input_folder, output_folder)
