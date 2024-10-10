@@ -94,9 +94,10 @@ sd = 1
 col = "vertices" #"faces"
 
 get_class_barplot(objClass, "steps/step2/objStats.csv", sd, col)
-# get_class_barplot(objClass, "steps/step2/objStatsResampled3k.csv", sd, col)
-# get_class_barplot(objClass, "steps/step2/objStatsResampled4k.csv", sd, col)
-get_class_barplot(objClass, "steps/step2/objStatsResampled4kv2.csv", sd, col)
+get_class_barplot(objClass, "steps/step2/objStatsResampled.csv", sd, col)
+
+
+
 # RectangleTable
 # Bicycle
 # Tree

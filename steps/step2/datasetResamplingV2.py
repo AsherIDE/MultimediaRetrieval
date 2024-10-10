@@ -9,7 +9,7 @@ import pymeshlab as ml
 # meshFile --> file path to object file from root folder
 # aim --> desired amount of vertices that the object will end up having
 # deviation --> tolerated amount of deviation from the aim (decimal)
-def resample(meshFile, meshClass, aim=4000, deviation=0.9):
+def resample(meshFile, meshClass, aim=4000, deviation=0.9, searchTask=False):
 
     # mesh initiation
     ms = ml.MeshSet()
@@ -112,8 +112,10 @@ def resample(meshFile, meshClass, aim=4000, deviation=0.9):
             break
 
     # save the resampled shape
-    ms.save_current_mesh("ShapeDatabase_INFOMR-resampledV2/" + meshClass + "/" + meshFile)
-    # ms.save_current_mesh(meshFile)
+    if searchTask == False:
+        ms.save_current_mesh("ShapeDatabase_INFOMR-resampledV2/" + meshClass + "/" + meshFile)
+    else:
+        ms.save_current_mesh("steps/step4/temp.obj")
     
     vertices =  ms.current_mesh().vertex_number()
     print(f"[Finished] resample: {meshFile} with {vertices} vertices")
@@ -158,28 +160,28 @@ def resample(meshFile, meshClass, aim=4000, deviation=0.9):
 
 
 
-# create main resampled folder if there isnt one
-pathlib.Path("ShapeDatabase_INFOMR-resampledV2").mkdir(exist_ok=True) 
+# # create main resampled folder if there isnt one
+# pathlib.Path("ShapeDatabase_INFOMR-resampledV2").mkdir(exist_ok=True) 
 
-# access dataset folder with class folders
-dataset = os.listdir("ShapeDatabase_INFOMR-master")
-dataset.remove("class_sizes_plot.png")
-dataset.remove("stats.txt")
+# # access dataset folder with class folders
+# dataset = os.listdir("ShapeDatabase_INFOMR-master")
+# dataset.remove("class_sizes_plot.png")
+# dataset.remove("stats.txt")
 
-for idx, class_name in enumerate(dataset):
-    # create class resampled folder if there isnt one
-    classfolderPath = os.path.join("ShapeDatabase_INFOMR-resampledV2", class_name)
-    pathlib.Path(classfolderPath).mkdir(exist_ok=True) 
+# for idx, class_name in enumerate(dataset):
+#     # create class resampled folder if there isnt one
+#     classfolderPath = os.path.join("ShapeDatabase_INFOMR-resampledV2", class_name)
+#     pathlib.Path(classfolderPath).mkdir(exist_ok=True) 
 
-    class_folder = os.listdir("ShapeDatabase_INFOMR-master/" + class_name)
+#     class_folder = os.listdir("ShapeDatabase_INFOMR-master/" + class_name)
 
-    print(f"----------------------------[ Class {class_name} ({idx + 1}/{len(dataset)}) ]----------------------------")
+#     print(f"----------------------------[ Class {class_name} ({idx + 1}/{len(dataset)}) ]----------------------------")
     
-    new_class_folder = os.listdir("ShapeDatabase_INFOMR-resampledV2/" + class_name)
-    for obj_name in class_folder:
-        if obj_name not in new_class_folder:
-            resample(obj_name, class_name, aim=4000, deviation=0.9)
+#     new_class_folder = os.listdir("ShapeDatabase_INFOMR-resampledV2/" + class_name)
+#     for obj_name in class_folder:
+#         if obj_name not in new_class_folder:
+#             resample(obj_name, class_name, aim=4000, deviation=0.9)
 
-    print("\n")
+#     print("\n")
     
-print(f"[Finished] resample: script done")
+# print(f"[Finished] resample: script done")
