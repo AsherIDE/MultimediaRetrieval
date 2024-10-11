@@ -70,4 +70,4 @@ print(df_features_normalized)
 print(df_standardization_data)
 
 df_features_normalized.to_csv("steps/step4/searchDescriptorsNormalized.csv", index=False)
-df_standardization_data.to_csv("steps/step4/searchStandardizationData.csv", index=False)
+df_standardization_data.to_csv("steps/step4/searchStandardizationData.csv")
