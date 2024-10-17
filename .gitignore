@@ -173,3 +173,4 @@ objDescriptors.csv
 # Very large .csv files
 descriptorsResampledNormalisedData.csv
 searchDescriptorsNormalized.csv
+searchResult.csv
