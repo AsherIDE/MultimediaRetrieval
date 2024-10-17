@@ -22,11 +22,11 @@ class ObjectCalculations:
         #GlobalDescriptorsForTesting
         numberSamples = 1000
         numberBins = 30
-        self.A3 = self.compute_histogram(self.compute_A3(), numberSamples, numberBins)
-        self.D1 = self.compute_histogram(self.compute_D1(), numberSamples, numberBins)
-        self.D2 = self.compute_histogram(self.compute_D2(), numberSamples, numberBins)
-        self.D3 = self.compute_histogram(self.compute_D3(), numberSamples, numberBins)
-        self.D4 = self.compute_histogram(self.compute_D4(), numberSamples, numberBins)
+        self.A3 = self.compute_histogram(self.compute_A3, numberSamples, numberBins)
+        self.D1 = self.compute_histogram(self.compute_D1, numberSamples, numberBins)
+        self.D2 = self.compute_histogram(self.compute_D2, numberSamples, numberBins)
+        self.D3 = self.compute_histogram(self.compute_D3, numberSamples, numberBins)
+        self.D4 = self.compute_histogram(self.compute_D4, numberSamples, numberBins)
         
         
     def write_to_csv(self):
@@ -233,6 +233,6 @@ def process_folder(folder_path):
                 # Write the descriptors to the CSV file
                 obj_calc.write_to_csv()
 
-
-folder_path = 'NormalizedShapes-resampled'
-process_folder(folder_path)
+#Remove #s to do all the normalized shapes
+#folder_path = 'NormalizedShapes-resampled'
+#process_folder(folder_path)

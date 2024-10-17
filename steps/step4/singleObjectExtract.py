@@ -22,11 +22,11 @@ class ObjectCalculations:
         #GlobalDescriptorsForTesting
         numberSamples = 1000
         numberBins = 30
-        self.A3 = self.compute_histogram(self.compute_A3(), numberSamples, numberBins)
-        self.D1 = self.compute_histogram(self.compute_D1(), numberSamples, numberBins)
-        self.D2 = self.compute_histogram(self.compute_D2(), numberSamples, numberBins)
-        self.D3 = self.compute_histogram(self.compute_D3(), numberSamples, numberBins)
-        self.D4 = self.compute_histogram(self.compute_D4(), numberSamples, numberBins)
+        self.A3 = self.compute_histogram(self.compute_A3, numberSamples, numberBins)
+        self.D1 = self.compute_histogram(self.compute_D1, numberSamples, numberBins)
+        self.D2 = self.compute_histogram(self.compute_D2, numberSamples, numberBins)
+        self.D3 = self.compute_histogram(self.compute_D3, numberSamples, numberBins)
+        self.D4 = self.compute_histogram(self.compute_D4, numberSamples, numberBins)
     
     def get_descriptors(self):
         descriptors = {
@@ -241,6 +241,6 @@ class ObjectCalculations:
             return histogram
     
 # Example usage:
-# obj_calc = ObjectCalculations("NormalizedShapes-resampled\AircraftBuoyant\m1337_normalized.obj")
-# descriptors = obj_calc.get_descriptors()
-# print(descriptors)
+obj_calc = ObjectCalculations("NormalizedShapes-resampled\AircraftBuoyant\m1337_normalized.obj")
+descriptors = obj_calc.get_descriptors()
+print(descriptors)
