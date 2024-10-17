@@ -21,11 +21,12 @@ class ObjectCalculations:
         self.eccentricityObj = self.eccentricity()                
         #GlobalDescriptorsForTesting
         numberSamples = 1000
-        self.A3 = self.compute_A3(numberSamples)
-        self.D1 = self.compute_D1(numberSamples)
-        self.D2 = self.compute_D2(numberSamples)
-        self.D3 = self.compute_D3(numberSamples)
-        self.D4 = self.compute_D4(numberSamples)
+        numberBins = 30
+        self.A3 = self.compute_histogram(self.compute_A3(), numberSamples, numberBins)
+        self.D1 = self.compute_histogram(self.compute_D1(), numberSamples, numberBins)
+        self.D2 = self.compute_histogram(self.compute_D2(), numberSamples, numberBins)
+        self.D3 = self.compute_histogram(self.compute_D3(), numberSamples, numberBins)
+        self.D4 = self.compute_histogram(self.compute_D4(), numberSamples, numberBins)
     
     def get_descriptors(self):
         descriptors = {
