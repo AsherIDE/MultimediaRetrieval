@@ -35,8 +35,15 @@ class ObjectCalculations:
     
         # Get the part before the last part (directory name)
         second_to_last_part = os.path.basename(os.path.dirname(self.obj_file))
+        # Convert histogram data to string to avoid issues with CSV formatting
+        A3_str = ','.join(map(str, self.A3))
+        D1_str = ','.join(map(str, self.D1))
+        D2_str = ','.join(map(str, self.D2))
+        D3_str = ','.join(map(str, self.D3))
+        D4_str = ','.join(map(str, self.D4))
+        
         data = [
-            last_part, second_to_last_part, self.surfaceAreaObj, self.compactnessObj, self.rectangularityObj, self.diameterObj, self.convexityObj, self.eccentricityObj, self.A3, self.D1, self.D2, self.D3, self.D4            
+            last_part, second_to_last_part, self.surfaceAreaObj, self.compactnessObj, self.rectangularityObj, self.diameterObj, self.convexityObj, self.eccentricityObj, A3_str, D1_str, D2_str, D3_str, D4_str
         ]
         file_path = 'steps\step3\descriptorFolder\descriptorsResampledNormalisedData.csv'
         # Check if the file exists to write headers
@@ -210,6 +217,8 @@ class ObjectCalculations:
             # Calculate the volume of the tetrahedron formed by the four vertices
             volume = self.calculate_tetrahedron_volume(v1, v2, v3, v4)
             volumes.append(np.cbrt(volume))        
+
+            
         return volumes
 
     def compute_histogram(self, descriptor_func, num_samples, num_bins):
@@ -234,5 +243,5 @@ def process_folder(folder_path):
                 obj_calc.write_to_csv()
 
 #Remove #s to do all the normalized shapes
-#folder_path = 'NormalizedShapes-resampled'
-#process_folder(folder_path)
+folder_path = 'NormalizedShapes-resampled'
+process_folder(folder_path)
