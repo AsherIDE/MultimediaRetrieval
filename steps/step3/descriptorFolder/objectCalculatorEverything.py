@@ -157,6 +157,7 @@ class ObjectCalculations:
     def compute_A3(self, num_samples):
         angles = []
         for _ in range(num_samples):
+            print(_)
             # Randomly select three distinct vertices
             v1, v2, v3 = random.sample(list(self.vertices), 3)
             # Calculate the angle between the three vertices
