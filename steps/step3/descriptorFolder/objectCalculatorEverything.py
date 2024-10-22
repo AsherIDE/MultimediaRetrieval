@@ -20,8 +20,8 @@ class ObjectCalculations:
         self.convexityObj = self.convexity()
         self.eccentricityObj = self.eccentricity()                
         #GlobalDescriptorsForTesting
-        numberSamples = 1000
-        numberBins = 30
+        numberSamples = 1000000
+        numberBins = 50
         self.A3 = self.compute_histogram(self.compute_A3, numberSamples, numberBins)
         self.D1 = self.compute_histogram(self.compute_D1, numberSamples, numberBins)
         self.D2 = self.compute_histogram(self.compute_D2, numberSamples, numberBins)
@@ -157,7 +157,6 @@ class ObjectCalculations:
     def compute_A3(self, num_samples):
         angles = []
         for _ in range(num_samples):
-            print(_)
             # Randomly select three distinct vertices
             v1, v2, v3 = random.sample(list(self.vertices), 3)
             # Calculate the angle between the three vertices
@@ -244,5 +243,5 @@ def process_folder(folder_path):
                 obj_calc.write_to_csv()
 
 #Remove #s to do all the normalized shapes
-folder_path = 'NormalizedShapes-resampled'
+folder_path = 'MultimediaRetrieval/NormalizedShapes-resampled/Apartment'
 process_folder(folder_path)
