@@ -45,7 +45,7 @@ class ObjectCalculations:
         data = [
             last_part, second_to_last_part, self.surfaceAreaObj, self.compactnessObj, self.rectangularityObj, self.diameterObj, self.convexityObj, self.eccentricityObj, A3_str, D1_str, D2_str, D3_str, D4_str
         ]
-        file_path = 'steps\step3\descriptorFolder\descriptorsResampledNormalisedData.csv'
+        file_path = 'MultimediaRetrieval\steps\step3\descriptorFolder\descriptorsResampledNormalisedData.csv'
         # Check if the file exists to write headers
         file_exists = os.path.isfile(file_path)    
         # Open the file in append mode
@@ -156,6 +156,7 @@ class ObjectCalculations:
 
     def compute_A3(self, num_samples):
         angles = []
+        print('Started A3')
         for _ in range(num_samples):
             # Randomly select three distinct vertices
             v1, v2, v3 = random.sample(list(self.vertices), 3)
@@ -167,6 +168,7 @@ class ObjectCalculations:
     def compute_D1(self, num_samples):
         barycenter = self.barycenter
         distances = []
+        print('Started D1')
         for _ in range(num_samples):
             # Randomly select a vertex
             random_vertex = random.choice(self.vertices)
@@ -177,6 +179,7 @@ class ObjectCalculations:
     
     def compute_D2(self, num_samples):
         distances = []
+        ('Started D2')
         for _ in range(num_samples):
             # Randomly select two distinct vertices
             v1, v2 = random.sample(list(self.vertices), 2)
@@ -195,6 +198,7 @@ class ObjectCalculations:
 
     def compute_D3(self, num_samples):
         areas = []
+        ('Started D3')
         for _ in range(num_samples):
             # Randomly select three distinct vertices
             v1, v2, v3 = random.sample(list(self.vertices), 3)            
@@ -210,7 +214,8 @@ class ObjectCalculations:
         return volume
 
     def compute_D4(self, num_samples):
-        volumes = []      
+        volumes = []
+        ('Started D4')      
         for _ in range(num_samples):
             # Randomly select four distinct vertices
             v1, v2, v3, v4 = random.sample(list(self.vertices), 4)           
@@ -236,12 +241,24 @@ def process_folder(folder_path):
         for filename in files:
             if filename.endswith('.obj'):
                 obj_file_path = os.path.join(root, filename)
+                obj_file_path = os.path.normpath(obj_file_path)  # Normalize the path
                 print(f"Processing file: {obj_file_path}")
                 # Create an instance of ObjectCalculations for each OBJ file
                 obj_calc = ObjectCalculations(obj_file_path)
                 # Write the descriptors to the CSV file
                 obj_calc.write_to_csv()
 
+def process_file(folder_path):
+    # Walk through the directory tree
+    if folder_path.endswith('.obj'):
+        obj_file_path = folder_path
+        obj_file_path = os.path.normpath(obj_file_path)  # Normalize the path
+        print(f"Processing file: {obj_file_path}")
+        # Create an instance of ObjectCalculations for each OBJ file
+        obj_calc = ObjectCalculations(obj_file_path)
+        # Write the descriptors to the CSV file
+        obj_calc.write_to_csv()
+
 #Remove #s to do all the normalized shapes
-folder_path = 'MultimediaRetrieval/NormalizedShapes-resampled/Apartment'
-process_folder(folder_path)
+folder_path = 'MultimediaRetrieval/NormalizedShapes-resampled/Tree/D00096_normalized.obj'
+process_file(folder_path)
