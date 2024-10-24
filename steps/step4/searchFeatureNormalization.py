@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-df = pd.read_csv("steps/descriptorsResampledNormalisedData.csv")
+df = pd.read_csv("objDescriptors.csv")
 
 # data collection point for the normalized/standardized data
 data = {"name": [name.replace("_normalized", "") for name in df["name"].to_list()], 
