@@ -20,13 +20,13 @@ class ObjectCalculations:
         self.convexityObj = self.convexity()
         self.eccentricityObj = self.eccentricity()                
         #GlobalDescriptorsForTesting
-        numberSamples = 1000000
-        numberBins = 50
-        self.A3 = self.compute_histogram(self.compute_A3, numberSamples, numberBins)
-        self.D1 = self.compute_histogram(self.compute_D1, numberSamples, numberBins)
-        self.D2 = self.compute_histogram(self.compute_D2, numberSamples, numberBins)
-        self.D3 = self.compute_histogram(self.compute_D3, numberSamples, numberBins)
-        self.D4 = self.compute_histogram(self.compute_D4, numberSamples, numberBins)
+        N = 100000
+        numberBins = 93
+        self.A3 = self.compute_histogram(self.compute_A3, N, numberBins)
+        self.D1 = self.compute_histogram(self.compute_D1, N, numberBins)
+        self.D2 = self.compute_histogram(self.compute_D2, N, numberBins)
+        self.D3 = self.compute_histogram(self.compute_D3, N, numberBins)
+        self.D4 = self.compute_histogram(self.compute_D4, N, numberBins)
         
         
     def write_to_csv(self):
@@ -260,5 +260,5 @@ def process_file(folder_path):
         obj_calc.write_to_csv()
 
 #Remove #s to do all the normalized shapes
-folder_path = 'MultimediaRetrieval/NormalizedShapes-resampled/Tree/D00096_normalized.obj'
-process_file(folder_path)
+folder_path = 'MultimediaRetrieval/NormalizedShapes-resampled'
+process_folder(folder_path)
