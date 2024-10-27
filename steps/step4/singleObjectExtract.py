@@ -20,8 +20,8 @@ class ObjectCalculations:
         self.convexityObj = self.convexity()
         self.eccentricityObj = self.eccentricity()                
         #GlobalDescriptorsForTesting
-        numberSamples = 1000
-        numberBins = 30
+        numberSamples = 10000 #TODO: has to be 100000
+        numberBins = 93
         self.A3 = self.compute_histogram(self.compute_A3, numberSamples, numberBins)
         self.D1 = self.compute_histogram(self.compute_D1, numberSamples, numberBins)
         self.D2 = self.compute_histogram(self.compute_D2, numberSamples, numberBins)
@@ -240,7 +240,7 @@ class ObjectCalculations:
             histogram = histogram / np.sum(histogram)            
             return histogram
     
-# Example usage:
-obj_calc = ObjectCalculations("NormalizedShapes-resampled\AircraftBuoyant\m1337_normalized.obj")
-descriptors = obj_calc.get_descriptors()
-print(descriptors)
+# # Example usage:
+# obj_calc = ObjectCalculations("NormalizedShapes-resampled\AircraftBuoyant\m1337_normalized.obj")
+# descriptors = obj_calc.get_descriptors()
+# print(descriptors)

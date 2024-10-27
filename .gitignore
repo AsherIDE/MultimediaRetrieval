@@ -171,6 +171,6 @@ NormalizedShapes-resampled
 objDescriptors.csv
 
 # Very large .csv files
-descriptorsResampledNormalisedData.csv
+OLDdescriptorsResampledNormalisedData.csv
 searchDescriptorsNormalized.csv
 searchResult.csv
