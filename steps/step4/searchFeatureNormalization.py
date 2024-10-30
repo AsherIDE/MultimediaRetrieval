@@ -24,7 +24,7 @@ for single_val_feature in single_val_features:
     # apply the standardization formula
     standardized_feature_range = []
     for i in feature_range:
-        standardized_feature_range.append((i - feature_range_mean) / feature_range_std)
+        standardized_feature_range.append(abs((i - feature_range_mean) / feature_range_std))
     
     # add standardized feature values to the new dataset
     data[single_val_feature] = standardized_feature_range

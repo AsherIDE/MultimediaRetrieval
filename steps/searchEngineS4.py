@@ -12,6 +12,7 @@ from step3.fullNormalize import ShapeNormalizer
 from step2.datasetResamplingV2 import resample
 from step4.singleObjectExtract import ObjectCalculations
 
+from scipy.stats import wasserstein_distance
 
 # 1. ask for INPUT .obj file
 # 2. resample and normalize INPUT
@@ -22,7 +23,10 @@ from step4.singleObjectExtract import ObjectCalculations
 
 
 class Object:
-    def __init__(self):
+    def __init__(self, bins, n):
+        self.bins = bins
+        self.n = n
+
         self.single_val_features = ["surfaceAreaObj","compactnessObj","rectangularityObj","diameterObj","convexityObj","eccentricityObj"]
         self.hist_features = ["A3","D1","D2","D3","D4"]
 
@@ -82,9 +86,9 @@ class Object:
     def normalizedfeatures(self):
 
         # get features of preprocessed search object
-        calculations = ObjectCalculations(self.temp_file_path)
+        calculations = ObjectCalculations(self.temp_file_path, self.bins, self.n)
         self.features = calculations.get_descriptors()
-
+        
         del self.features['convex_hull_volume']
         del self.features['eigenvalues']
         del self.features['obb_volume']
@@ -98,9 +102,9 @@ class Object:
             std = df_features_means_stds.at[1, single_val_feature]
 
             # update the value itself
-            self.features[single_val_feature] = ((self.features[single_val_feature] - mean) / std)
+            self.features[single_val_feature] = abs((self.features[single_val_feature] - mean) / std)
 
-        # print(self.features)
+        print(self.features)
 
         print(f"[Finished] features: search object feature extraction and normalization complete")
 
@@ -109,6 +113,24 @@ class Object:
         df = pd.read_csv("steps/step4/searchDescriptorsNormalized_100K93B.csv")
 
         # euclidean distance (hist features)
+        # distance_features = {}
+        # for hist_feature in self.hist_features:
+        #     source = np.array(self.features[hist_feature])
+        #     targets = df[hist_feature]
+
+        #     # iterate every object from the dataset
+        #     distance_feature = []
+        #     for target in targets:
+        #         target = np.array(eval(target))
+                
+        #         combined = source - target
+        #         ss = np.dot(combined.T, combined)
+                
+        #         distance_feature.append(np.sqrt(ss))
+            
+        #     distance_features[hist_feature] = distance_feature
+
+        # earth movers distance (hist features)
         distance_features = {}
         for hist_feature in self.hist_features:
             source = np.array(self.features[hist_feature])
@@ -119,12 +141,12 @@ class Object:
             for target in targets:
                 target = np.array(eval(target))
                 
-                combined = source - target
-                ss = np.dot(combined.T, combined)
+                d = wasserstein_distance(source, target)
                 
-                distance_feature.append(np.sqrt(ss))
+                distance_feature.append(np.sqrt(d))
             
             distance_features[hist_feature] = distance_feature
+
 
         # distance single-value features
         for single_val_feature in self.single_val_features:
@@ -138,19 +160,24 @@ class Object:
 
             distance_features[single_val_feature] = distance_feature
 
-        # standardize all features so they can be compared properly
+        # standardize hist features so they can be compared properly
         standardized_distance_features = {"name": df["name"].to_list(),
                                           "class": df["class"].to_list()}
         for distance_feature_key, distance_feature_values in distance_features.items():
-            mean = np.mean(distance_feature_values)
-            std = np.std(distance_feature_values)
+            if distance_feature_key in self.hist_features:
+                mean = np.mean(distance_feature_values)
+                std = np.std(distance_feature_values)
 
-            # iterate every single value of a single feature
-            standardized_distance_feature = []
-            for distance_feature_value in distance_feature_values:
-                standardized_distance_feature.append((distance_feature_value - mean) / std)
+                # iterate every single value of a single feature
+                standardized_distance_feature = []
+                for distance_feature_value in distance_feature_values:
+                    standardized_distance_feature.append((distance_feature_value - mean) / std)
 
-            standardized_distance_features[distance_feature_key] = standardized_distance_feature
+                standardized_distance_features[distance_feature_key] = standardized_distance_feature
+            # ignore single-value features since they have already been normalized
+            else:
+                standardized_distance_features[distance_feature_key] = distance_feature_values
+
 
         # save the data
         self.distances = standardized_distance_features
@@ -162,17 +189,14 @@ class Object:
         df_distances = pd.concat([df_distances[["name", "class"]], df_distances.iloc[ :, 2:13].abs()], axis=1)
         
         # grab mean distance from all features of a single object (row mean)
-        df_distances["closeness"] = df_distances.iloc[ :, 2:13].mean(axis=1)
-
+        df_distances["closeness"] = df_distances.iloc[ :, 2:13].mean(axis=1) # 7 to skip hist features
+        print(df_distances)
         # update distances
         self.distances = df_distances[["name", "class", "closeness"]]
-        self.distances = self.distances.sort_values(["closeness"], ascending=False)
+        self.distances = self.distances.sort_values(["closeness"], ascending=True)
         self.distances.to_csv("searchResult.csv", index=False)
 
         print("[Finished] distances: feature distance computations done")
 
-object = Object()
+object = Object(bins=93, n=100000)
 object.load()
-
-
-
