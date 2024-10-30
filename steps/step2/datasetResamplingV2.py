@@ -128,7 +128,7 @@ def resample(meshFile, meshClass, aim=4000, deviation=0.9, searchTask=False):
 # extremely small birb object example (requires multiple upsampling loops)
 # test_obj_name = "m43.obj"
 # test_class_name = "Bird"
-# resample(test_obj_name, test_class_name, aim=4000, deviation=0.9)
+# resample(test_obj_name, test_class_name, aim=4000, deviation=0.9, searchTask=True)
 
 # extremely large tree object example  (requires multiple downsampling loops)
 # test_obj_name = "D00096.obj"

@@ -1,5 +1,7 @@
 import os
 
+import pymeshlab as ml # this import has to be over here, even though it appears like its not being used
+
 import pandas as pd
 import numpy as np
 
@@ -9,6 +11,7 @@ from tkinter.filedialog import askopenfilename
 from step3.fullNormalize import ShapeNormalizer
 from step2.datasetResamplingV2 import resample
 from step4.singleObjectExtract import ObjectCalculations
+
 
 # 1. ask for INPUT .obj file
 # 2. resample and normalize INPUT
@@ -34,7 +37,7 @@ class Object:
         # Hide the main tkinter window
         root = Tk()
         root.withdraw()
-
+        
         # Open file dialog to select a file
         file_path = askopenfilename(
             filetypes=[("OBJ files", "*.obj")],
@@ -64,7 +67,7 @@ class Object:
         file_path_list = self.file_path.split("/")
         obj_name = file_path_list[-1]
         obj_class = file_path_list[-2]
-
+        
         resample(obj_name, obj_class, aim=4000, deviation=0.9, searchTask=True)
         
         temp_file_path_in = os.path.join(os.getcwd(), "steps\\step4\\temp.obj")
@@ -87,7 +90,7 @@ class Object:
         del self.features['obb_volume']
 
         # load values to standardize with
-        df_features_means_stds = pd.read_csv("steps/step4/searchStandardizationData.csv")
+        df_features_means_stds = pd.read_csv("steps/step4/searchStandardizationData_100K93B.csv")
 
         # standardize single-value features (hist features already done)
         for single_val_feature in self.single_val_features:
@@ -97,11 +100,13 @@ class Object:
             # update the value itself
             self.features[single_val_feature] = ((self.features[single_val_feature] - mean) / std)
 
+        # print(self.features)
+
         print(f"[Finished] features: search object feature extraction and normalization complete")
 
 
     def compare(self):
-        df = pd.read_csv("steps/step4/searchDescriptorsNormalized.csv")
+        df = pd.read_csv("steps/step4/searchDescriptorsNormalized_100K93B.csv")
 
         # euclidean distance (hist features)
         distance_features = {}
@@ -157,12 +162,12 @@ class Object:
         df_distances = pd.concat([df_distances[["name", "class"]], df_distances.iloc[ :, 2:13].abs()], axis=1)
         
         # grab mean distance from all features of a single object (row mean)
-        df_distances["distance"] = df_distances.iloc[ :, 2:13].mean(axis=1)
+        df_distances["closeness"] = df_distances.iloc[ :, 2:13].mean(axis=1)
 
         # update distances
-        self.distances = df_distances[["name", "class", "distance"]]
-        self.distances = self.distances.sort_values(["distance"], ascending=True)
-        self.distances.to_csv("searchResult.csv")
+        self.distances = df_distances[["name", "class", "closeness"]]
+        self.distances = self.distances.sort_values(["closeness"], ascending=False)
+        self.distances.to_csv("searchResult.csv", index=False)
 
         print("[Finished] distances: feature distance computations done")
 
