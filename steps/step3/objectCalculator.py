@@ -20,7 +20,7 @@ class ObjectCalculations:
         self.convexityObj = self.convexity()
         self.eccentricityObj = self.eccentricity()                
         #GlobalDescriptorsForTesting
-        numberSamples = 1000
+        numberSamples = 100000
         self.A3 = self.compute_A3(numberSamples)
         self.D1 = self.compute_D1(numberSamples)
         self.D2 = self.compute_D2(numberSamples)

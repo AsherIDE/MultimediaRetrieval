@@ -260,5 +260,5 @@ def process_file(folder_path):
         obj_calc.write_to_csv()
 
 #Remove #s to do all the normalized shapes
-folder_path = 'MultimediaRetrieval/NormalizedShapes-resampled'
+folder_path = 'MultimediaRetrieval/NormalizedShapes-resampledPart'
 process_folder(folder_path)
