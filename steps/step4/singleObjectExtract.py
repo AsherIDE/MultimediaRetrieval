@@ -6,7 +6,7 @@ from scipy.spatial import ConvexHull
 from math import pi
 
 class ObjectCalculations:
-    def __init__(self, obj_file):
+    def __init__(self, obj_file, numberBins, numberSamples):
         self.obj_file = obj_file
         self.vertices, self.faces, self.SurfaceArea, self.volume, self.barycenter = self.load_obj(obj_file)
         #LocalDescriptorsForTesting
@@ -20,8 +20,6 @@ class ObjectCalculations:
         self.convexityObj = self.convexity()
         self.eccentricityObj = self.eccentricity()                
         #GlobalDescriptorsForTesting
-        numberSamples = 10000 #TODO: has to be 100000
-        numberBins = 93
         self.A3 = self.compute_histogram(self.compute_A3, numberSamples, numberBins)
         self.D1 = self.compute_histogram(self.compute_D1, numberSamples, numberBins)
         self.D2 = self.compute_histogram(self.compute_D2, numberSamples, numberBins)
@@ -241,6 +239,6 @@ class ObjectCalculations:
             return histogram
     
 # # Example usage:
-# obj_calc = ObjectCalculations("NormalizedShapes-resampled\AircraftBuoyant\m1337_normalized.obj")
+# obj_calc = ObjectCalculations("NormalizedShapes-resampled\AircraftBuoyant\m1337_normalized.obj", 93, 100000)
 # descriptors = obj_calc.get_descriptors()
 # print(descriptors)
