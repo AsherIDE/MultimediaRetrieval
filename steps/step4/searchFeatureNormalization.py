@@ -1,7 +1,11 @@
 import pandas as pd
 import numpy as np
 
+<<<<<<< HEAD
 df = pd.read_csv("objDescriptors.csv")
+=======
+df = pd.read_csv("steps/step3/descriptorFolder/descriptorsResampledNormalisedData.csv")
+>>>>>>> 1e8e69473a566db2bb95fd5adc198ab68a57b727
 
 # data collection point for the normalized/standardized data
 data = {"name": [name.replace("_normalized", "") for name in df["name"].to_list()], 
@@ -24,7 +28,7 @@ for single_val_feature in single_val_features:
     # apply the standardization formula
     standardized_feature_range = []
     for i in feature_range:
-        standardized_feature_range.append((i - feature_range_mean) / feature_range_std)
+        standardized_feature_range.append(abs((i - feature_range_mean) / feature_range_std))
     
     # add standardized feature values to the new dataset
     data[single_val_feature] = standardized_feature_range
@@ -32,7 +36,7 @@ for single_val_feature in single_val_features:
     print(f"[After] {single_val_feature}: mean={np.mean(standardized_feature_range)} std={np.std(standardized_feature_range)}")
     
 # NOTE: This part has been disabled, since it has already been done before, so it is replaced with this
-hist_features = ["A3","D1","D2","D3","D4"]
+hist_features = ["A3","D1","D2","D3", "D4"]
 for hist_feature_name in hist_features:
     hist_feature = df[hist_feature_name].to_list()
 
@@ -69,5 +73,5 @@ df_standardization_data = pd.DataFrame(standaridization_data)
 print(df_features_normalized)
 print(df_standardization_data)
 
-df_features_normalized.to_csv("steps/step4/searchDescriptorsNormalized.csv", index=False)
-df_standardization_data.to_csv("steps/step4/searchStandardizationData.csv")
+df_features_normalized.to_csv("steps/step4/searchDescriptorsNormalized_100K93B.csv", index=False)
+df_standardization_data.to_csv("steps/step4/searchStandardizationData_100K93B.csv")

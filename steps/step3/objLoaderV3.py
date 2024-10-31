@@ -9,7 +9,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from objectCalculator import ObjectCalculations  # Import the class from the other file
+from objectCalculatorWithThreads import ObjectCalculations  # Import the class from the other file
 
 
 
@@ -386,7 +386,10 @@ class MainWindow(QMainWindow):
 
     def show_histograms(self):
         if self.shape:
-            self.histogram_window = HistogramWindow(self.shape)
+            num_samples = 1  # Example value
+            num_bins = 1  # Example value
+            histograms = self.shape.compute_all_descriptors(num_samples, num_bins)
+            self.histogram_window = HistogramWindow(histograms)
             self.histogram_window.show()
 
 # execution of the program
