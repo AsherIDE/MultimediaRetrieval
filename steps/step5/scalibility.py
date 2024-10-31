@@ -4,20 +4,22 @@ import numpy as np
 import faiss
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 class KNNEngine:
     def __init__(self, feature_dim):
         self.feature_dim = feature_dim
-        self.index = faiss.IndexFlatL2(self.feature_dim)  # Use L2 (Euclidean) distance
+        self.index = faiss.IndexFlatL2(self.feature_dim)
 
     def build_index(self, features):
-        features = np.ascontiguousarray(features, dtype=np.float32)  # FAISS expects float32 arrays
+        features = np.ascontiguousarray(features, dtype=np.float32)
         self.index.add(features)
 
     def query(self, query_vector, k=5):
         query_vector = np.ascontiguousarray(query_vector.reshape(1, -1), dtype=np.float32)
-        distances, indices = self.index.search(query_vector, k)
-        return indices[0], distances[0]
+        distances, indices = self.index.search(query_vector, k + 1)  
+        indices, distances = indices[0][1:k+1], distances[0][1:k+1]  
+        return indices, distances
 
 class DimensionalityReducer:
     def __init__(self, features):
@@ -28,108 +30,109 @@ class DimensionalityReducer:
         reduced_features = tsne.fit_transform(self.features)
         return reduced_features
 
+def parse_descriptor_columns(df):
+    for col in ['A3', 'D1', 'D2', 'D3', 'D4']:
+        df[col] = df[col].apply(lambda x: np.fromstring(x, sep=','))
+
+    feature_matrix = np.hstack([    
+        df['surfaceAreaObj'].values.reshape(-1, 1),
+        df['compactnessObj'].values.reshape(-1, 1),
+        df['rectangularityObj'].values.reshape(-1, 1),
+        df['diameterObj'].values.reshape(-1, 1),
+        df['convexityObj'].values.reshape(-1, 1),
+        df['eccentricityObj'].values.reshape(-1, 1),
+        np.vstack(df['A3'].values),
+        np.vstack(df['D1'].values),
+        np.vstack(df['D2'].values),
+        np.vstack(df['D3'].values),
+        np.vstack(df['D4'].values)
+    ])
+    return feature_matrix
+
 def load_descriptors(csv_filepath):
-    """
-    Loads the CSV file containing object descriptors, 
-    and returns a DataFrame and the features (without name and class).
-    """
-    # Check if file exists before loading
     if os.path.exists(csv_filepath):
         print("File found! Loading...")
         df = pd.read_csv(csv_filepath)
-        features = df.drop(columns=['name', 'class']).values  # Drop 'name' and 'class' for feature matrix
-        return df, features
+        feature_matrix = parse_descriptor_columns(df)
+        return df, feature_matrix
     else:
         print(f"File not found at: {csv_filepath}")
         return None, None
 
-def visualize_tsne_2d(reduced_features, labels, title="t-SNE Visualization"):
-    """
-    Creates a 2D scatterplot of the t-SNE results, coloring by class labels.
-    """
-    plt.figure(figsize=(10, 7))
+def visualize_tsne_2d(reduced_features, labels, highlight_index=None, title="t-SNE Visualization"):
+    plt.figure(figsize=(12, 8))
+    
+    # Generate a colormap with enough colors for all unique classes
     unique_labels = np.unique(labels)
-    
-    for label in unique_labels:
+    colors = cm.get_cmap("tab20", len(unique_labels))  # Use 'tab20' for up to 20 distinct colors
+
+    # Plot each class with its color
+    for idx, label in enumerate(unique_labels):
         indices = np.where(labels == label)
-        plt.scatter(reduced_features[indices, 0], reduced_features[indices, 1], label=label, s=50)
-    
-    plt.title(title)
-    plt.xlabel('Component 1')
-    plt.ylabel('Component 2')
-    plt.legend()
+        plt.scatter(reduced_features[indices, 0], reduced_features[indices, 1], 
+                    label=label, color=colors(idx), s=50, alpha=0.7)
+
+    # Highlight the specific point if provided
+    if highlight_index is not None:
+        plt.scatter(reduced_features[highlight_index, 0], reduced_features[highlight_index, 1], 
+                    color='red', s=100, edgecolor='black', label='Selected Shape', zorder=5)
+
+    # Set titles and labels
+    plt.title(title, fontsize=16)
+    plt.xlabel('Component 1', fontsize=12)
+    plt.ylabel('Component 2', fontsize=12)
+
+    # Place legend outside the plot
+    plt.legend(title="Class", bbox_to_anchor=(1.05, 1), loc='upper left', 
+               borderaxespad=0., fontsize='small', ncol=2)
+    plt.grid(True)
+    plt.tight_layout()  # Adjust layout to fit everything nicely
+
     plt.show()
 
 def select_shape_by_name(df):
-    """
-    Allows the user to select a shape by name from the DataFrame.
-    :param df: pandas DataFrame containing shape descriptors
-    :return: The index of the selected shape in the DataFrame
-    """
     print("Available shapes:")
     for index, row in df.iterrows():
         print(f"- {row['name']}")
 
     shape_name = input("Enter the name of the shape to query: ")
-    if shape_name in df['name'].values:
-        return df[df['name'] == shape_name].index[0]
-    else:
+    selected_shape_idx = df[df['name'].str.lower() == shape_name.lower()].index
+    if len(selected_shape_idx) == 0:
         print("Shape not found!")
         return None
+    return selected_shape_idx[0]
 
 def main():
-    # Full path to your CSV file
-    csv_filepath = r'C:\Universiteit\HCI\MultimediaRetrieval\steps\step5\objDescriptors.csv'  # Change this to your actual path
+    csv_filepath = r'C:/Universiteit/HCI/MultimediaRetrieval/steps/step3/descriptorFolder/descriptorsResampledNormalisedDataNthousandB30.csv'
 
-    # Load shape descriptors from CSV
     df, features = load_descriptors(csv_filepath)
-
-    # If file not found or failed to load
     if df is None or features is None:
         print("Failed to load descriptors. Exiting.")
         return
 
-    # K-Nearest Neighbors (KNN) search using FAISS
-    knn = KNNEngine(feature_dim=features.shape[1])  # Number of features in the CSV
+    knn = KNNEngine(feature_dim=features.shape[1])
     knn.build_index(features)
 
-    # Allow the user to select a shape by name
     selected_shape_idx = select_shape_by_name(df)
     if selected_shape_idx is None:
-        return  # Exit if the shape was not found
+        return
 
-    # Use the selected shape's feature vector as the query
-    query_vector = features[selected_shape_idx]  # Get feature vector of the selected shape
-    k = 5  # Number of neighbors to find
+    query_vector = features[selected_shape_idx]
+    k = 5
     neighbors, distances = knn.query(query_vector, k=k)
-    
-    # Print results
+
     print(f"Query shape: {df.iloc[selected_shape_idx]['name']}")
     print("K-Nearest Neighbors:")
     for i, neighbor_idx in enumerate(neighbors):
         shape_name = df.iloc[neighbor_idx]['name']
-        print(f"{i + 1}: Shape = {shape_name}, Distance = {distances[i]}")
+        shape_class = df.iloc[neighbor_idx]['class']
+        print(f"{i + 1}: Shape = {shape_name}, Class = {shape_class}, Distance = {distances[i]}")
 
-    # Dimensionality Reduction (t-SNE)
     dr = DimensionalityReducer(features)
     reduced_features = dr.apply_tsne()
 
-    # Visualize the t-SNE scatterplot, color by 'class'
     labels = df['class'].values
-    visualize_tsne_2d(reduced_features, labels)
-
-def test_input():
-    print("Available shapes:")
-    shapes = ["Cube", "Sphere", "Cylinder"]  # Example shapes
-    for shape in shapes:
-        print(f"- {shape}")
-
-    shape_name = input("Enter the name of the shape to query: ")
-    if shape_name in shapes:
-        print(f"You selected: {shape_name}")
-    else:
-        print("Shape not found!")
+    visualize_tsne_2d(reduced_features, labels, highlight_index=selected_shape_idx)  # Highlight the selected shape
 
 if __name__ == "__main__":
-    #main()
-    test_input()
+    main()
