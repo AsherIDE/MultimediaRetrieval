@@ -594,7 +594,6 @@ class MainWindow(QMainWindow):
     def displaySmallerWidgets(self, results, distances):
         for widget, filePathOld, distance in zip(self.opengl_widgets_small, results, distances):
             filePath = self.insert_string(filePathOld,"_normalized")
-            print("MultimediaRetrieval/NormalizedShapes-resampled/"+filePath)
             widget.load_obj_file("MultimediaRetrieval/NormalizedShapes-resampled/"+filePath, distance)
             widget.toggle_vertices()
             widget.toggle_faces()
