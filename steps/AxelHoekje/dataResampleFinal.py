@@ -102,24 +102,21 @@ def resample(meshFile, meshClass, aim=4000, deviation=0.9, searchTask=False):
 
             downsample()
             prev_resampling_func = "down"
-
         else:
-           print("oof")
            break
-
         iteration += 1
         if iteration == 5:
+            print("5 iterations")
             break
 
     # save the resampled shape
     if searchTask == False:
         ms.save_current_mesh("ShapeDatabase_INFOMR-resampledV2/" + meshClass + "/" + meshFile)
     else:
-        print("saved")
         ms.save_current_mesh("temp.obj")
 
     vertices =  ms.current_mesh().vertex_number()
-    print(f"[Finished] resample: {meshFile} with {vertices} vertices")
+    print(f"[Finished] resample: {meshFile} with {vertices} vertices part of {meshClass}")
 
 
 ############################################################################################

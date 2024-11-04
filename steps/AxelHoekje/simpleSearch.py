@@ -1,6 +1,6 @@
 import os
 
-#import pymeshlab as ml # this import has to be over here, even though it appears like its not being used
+import pymeshlab as ml # this import has to be over here, even though it appears like its not being used
 
 import pandas as pd
 import numpy as np
@@ -22,8 +22,8 @@ from scipy.stats import wasserstein_distance
 # 5. calculate similarity between INPUT and DATASET by normalization [0, &] or [0, 1]
 
 
-class Object:
-    def __init__(self, bins, n):
+class searchObject:
+    def __init__(self, bins, n, search_object_features):
         self.bins = bins
         self.n = n
 
@@ -36,28 +36,52 @@ class Object:
 
         self.distances = {}
 
+        self.load(search_object_features)
 
-    def load(self, filepath):
+
+    def load(self, search_object_features):
         # Hide the main tkinter window
         root = Tk()
         root.withdraw()
         
-        # Open file dialog to select a file
-        file_path = filepath
+        if search_object_features == None:
 
-        if not file_path:
-            print("[Error] preprocessing: No file selected!")
-            return
+            # Open file dialog to select a file
+            file_path = askopenfilename(
+                filetypes=[("OBJ files", "*.obj")],
+                title="Select an OBJ file"
+            )
 
-        # Process the selected file
-        print(f"[Started] preprocessing: {file_path}")
+            if not file_path:
+                print("[Error] preprocessing: No file selected!")
+                return
 
-        self.file_path = file_path
+            # Process the selected file
+            print(f"[Started] preprocessing: {file_path}")
 
-        # prepare object for comparison task
-        self.preprocess()
-        self.normalizedfeatures()
+            self.file_path = file_path
 
+            # prepare object for comparison task
+            self.preprocess()
+            self.normalizedfeatures()
+        else:
+            # fill in self.features with search_object_features
+            self.features = {
+                "surfaceAreaObj": search_object_features[0],
+                "compactnessObj": search_object_features[1],
+                "rectangularityObj": search_object_features[2],
+                "diameterObj": search_object_features[3],
+                "convexityObj": search_object_features[4],
+                "eccentricityObj": search_object_features[5],
+                "A3": search_object_features[6],
+                "D1": search_object_features[7],
+                "D2": search_object_features[8],
+                "D3": search_object_features[9],
+                "D4": search_object_features[10]
+            }
+            print("[Info] features: search object features extracted for search task!")
+
+            
         # compare object to dataset
         self.compare()
 
@@ -91,7 +115,7 @@ class Object:
         del self.features['obb_volume']
 
         # load values to standardize with
-        df_features_means_stds = pd.read_csv("steps/step4/searchStandardizationData_100K93B.csv")
+        df_features_means_stds = pd.read_csv("MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv")
 
         # standardize single-value features (hist features already done)
         for single_val_feature in self.single_val_features:
@@ -107,7 +131,7 @@ class Object:
 
 
     def compare(self):
-        df = pd.read_csv("MultimediaRetrieval/steps/AxelHoekje/dataBaseFinal.csv")
+        df = pd.read_csv("MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv")
 
         # euclidean distance (hist features)
         # distance_features = {}
@@ -185,13 +209,14 @@ class Object:
         # make all distance values positive
         df_distances = pd.concat([df_distances[["name", "class"]], df_distances.iloc[ :, 2:13].abs()], axis=1)
         
+        # df_distances = df_distances.drop(["D1"], axis=1)
+
         # grab mean distance from all features of a single object (row mean)
         df_distances["closeness"] = df_distances.iloc[ :, 2:13].mean(axis=1) # 7 to skip hist features
-        print(df_distances)
+        # print(df_distances)
         # update distances
         self.distances = df_distances[["name", "class", "closeness"]]
         self.distances = self.distances.sort_values(["closeness"], ascending=True)
         self.distances.to_csv("searchResult.csv", index=False)
 
         print("[Finished] distances: feature distance computations done")
-

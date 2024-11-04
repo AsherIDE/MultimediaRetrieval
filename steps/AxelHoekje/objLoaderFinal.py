@@ -12,7 +12,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 from dataResampleFinal import resample
 from fullNormalize import ShapeNormalizer
-from simpleSearch import Object
+from simpleSearch import searchObject
+import re
 
 class SmallerWidget(QGLWidget):
     def __init__(self, parent=None):
@@ -29,14 +30,16 @@ class SmallerWidget(QGLWidget):
         self.mouse_last_pos = None
         self.is_right_button_pressed = False  # Initialize the flag here 
         self.is_left_button_pressed = False #Left button standard false 
-        # Object rotation angles
         self.rotation_x = 0
         self.rotation_y = 0
-
+        self.file_name = ""  # Add this line to store the file name
+        self.distance_label = ""
         
-    def load_obj_file(self, fileName):
+    def load_obj_file(self, fileName, distance):
         self.vertices = []
         self.faces = []
+        self.file_name = os.path.join(os.path.basename(os.path.dirname(fileName)), os.path.basename(fileName))
+        self.distance_label = (f"Distance = {distance}")
         with open(fileName, 'r') as file:
             for line in file:
                 if line.startswith('v '):
@@ -82,6 +85,8 @@ class SmallerWidget(QGLWidget):
             self.draw_faces()
         if self.display_edges:
             self.draw_edges()
+        self.renderText(10, 10, self.file_name)
+        self.renderText(10, 25, self.distance_label)  # Add this line to render the file name
 
     def draw_vertices(self):
         glBegin(GL_POINTS)
@@ -111,7 +116,6 @@ class SmallerWidget(QGLWidget):
                 glVertex3fv(self.vertices[vertex_idx])
         glEnd()
 
-
     def toggle_vertices(self):
         self.display_vertices = not self.display_vertices
         self.update()
@@ -119,7 +123,6 @@ class SmallerWidget(QGLWidget):
     def toggle_faces(self):
         self.display_faces = not self.display_faces
         self.update()
-
 
     def toggle_edges_on(self):
         self.display_edges = True
@@ -172,7 +175,8 @@ class SmallerWidget(QGLWidget):
             self.camera_pos[2] += zoom_sensitivity  
         else:
             self.camera_pos[2] -= zoom_sensitivity  
-        self.update() 
+        self.update()
+
 
 ############################################################################################
 # OpenGL widget
@@ -524,9 +528,23 @@ class MainWindow(QMainWindow):
         self.showMaximized()  # Open the application in maximized window
 
     #Define the method to perform simple search
+    def insert_string(self, filename, insert):
+        # Use a regular expression to find the part before .obj
+        match = re.match(r"(.*?)(\.obj)", filename)
+        if match:
+            # Construct the new filename with the inserted string
+            new_filename = f"{match.group(1)}{insert}{match.group(2)}"
+            return new_filename
+        return filename
+    
     def perform_simple_search(self):
         allDescriptors = self.shape.getAllDescriptors()
-        df = Object(allDescriptors)
+        result = searchObject(100000, 93, allDescriptors)
+        results = result.distances[0:5]
+        distances = np.array(results['closeness'])
+        filtered_results = np.array(results[['name', 'class']])
+        combined = [f"{row[1]}/{row[0]}" for row in filtered_results]
+        self.displaySmallerWidgets(combined, distances)
 
     def perform_adv_search(self):
         print("Advanced search")
@@ -569,15 +587,14 @@ class MainWindow(QMainWindow):
         dialog.setLayout(layout)
         dialog.exec_()
 
-    def displaySmallerWidgets(self, filePath):
-        for widget in self.opengl_widgets_small:
-            print(widget)
-            print(filePath)
-            widget.load_obj_file(filePath)
+    def displaySmallerWidgets(self, results, distances):
+        for widget, filePathOld, distance in zip(self.opengl_widgets_small, results, distances):
+            filePath = self.insert_string(filePathOld,"_normalized")
+            print("MultimediaRetrieval/NormalizedShapes-resampled/"+filePath)
+            widget.load_obj_file("MultimediaRetrieval/NormalizedShapes-resampled/"+filePath, distance)
             widget.toggle_vertices()
             widget.toggle_faces()
             widget.toggle_edges_on()
-    
 
     def resamp_norm_Obj(self, fileName):
         class_name = os.path.basename(os.path.dirname(fileName))
@@ -598,7 +615,7 @@ class MainWindow(QMainWindow):
         if fileName:
             #Resampling and normilisation of the object saved in temp.obj
             resampled_normalised_fileName = self.resamp_norm_Obj(fileName)
-
+            print(resampled_normalised_fileName)
             #Visualising object in main widget
             self.opengl_widget.load_obj_file(resampled_normalised_fileName)
             self.file_display.setText(fileName)
