@@ -1,3 +1,4 @@
+import os
 import sys
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QDialog, QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QFileDialog, QLineEdit, QSpacerItem, QHBoxLayout, QLabel, QSizePolicy
 from PyQt5.QtCore import QTimer, Qt
@@ -9,6 +10,9 @@ import numpy as np
 from singleObjectCalcFinal import ObjectCalculations
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
+#from dataResampleFinal import resample
+from fullNormalize import ShapeNormalizer
+from simpleSearch import Object
 
 class SmallerWidget(QGLWidget):
     def __init__(self, parent=None):
@@ -26,7 +30,7 @@ class SmallerWidget(QGLWidget):
         self.is_right_button_pressed = False  # Initialize the flag here 
         self.is_left_button_pressed = False #Left button standard false 
         # Object rotation angles
-        self.rotation_x = 90
+        self.rotation_x = 0
         self.rotation_y = 0
 
         
@@ -185,7 +189,7 @@ class OpenGLWidget(QGLWidget):
         self.timer.timeout.connect(self.updateGL)
         self.timer.start(16)  # 16 is near 60 fps
         #voor de camera
-        self.camera_pos = np.array([0.0, 0.0, -5.0])  # X, Y, Z position
+        self.camera_pos = np.array([0.0, 0.0, -4.0])  # X, Y, Z position
         self.mouse_last_pos = None
         self.is_right_button_pressed = False  # Initialize the flag here 
         self.is_left_button_pressed = False #Left button standard false 
@@ -341,7 +345,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Object testing')
-    
+        self.file_pathResampled = ""
+        self.temp_file_pathResampled = ""
         self.opengl_widget = OpenGLWidget(self)
         self.opengl_widget.setFixedSize(1650, 600)  # Set fixed size for the OpenGL widget
 
@@ -521,7 +526,7 @@ class MainWindow(QMainWindow):
     #Define the method to perform simple search
     def perform_simple_search(self):
         allDescriptors = self.shape.getAllDescriptors()
-        print(allDescriptors)
+        df = Object(allDescriptors)
 
     def perform_adv_search(self):
         print("Advanced search")
@@ -536,28 +541,21 @@ class MainWindow(QMainWindow):
 
     def plot_descriptors(self, descriptors):
         A3, D1, D2, D3, D4 = descriptors
-
         # Create a new dialog window
         dialog = QDialog(self)
         dialog.setWindowTitle("Global Descriptors Frequency plots N=100k and B=93")
         layout = QVBoxLayout(dialog)
-
         # Create the plot
         fig, axs = plt.subplots(3, 2, figsize=(10, 10))
         axs = axs.flatten()
-
         axs[0].plot(A3)
         axs[0].set_title('A3: angle between 3 random vertices')
-
         axs[1].plot(D1)
         axs[1].set_title('D1: distance between barycenter and random vertex')
-
         axs[2].plot(D2)
         axs[2].set_title('D2: distance between 2 random vertices')
-
         axs[3].plot(D3)
         axs[3].set_title('D3: square root of area of triangle given by 3 random vertices')
-
         axs[4].plot(D4)
         axs[4].set_title('D4: cube root of volume of tetrahedron formed by random vertices')
 
@@ -577,22 +575,39 @@ class MainWindow(QMainWindow):
             print(filePath)
             widget.load_obj_file(filePath)
             widget.toggle_vertices()
-            widget.toggle_vertices()
+            widget.toggle_faces()
             widget.toggle_edges_on()
+    
+
+    def resamp_norm_Obj(self, fileName):
+        class_name = os.path.basename(os.path.dirname(fileName))
+        obj_name = os.path.basename(fileName)
+        resample(obj_name, class_name, aim=4000, deviation=0.9, searchTask=True)
+        temp_file_path_in = os.path.join(os.getcwd(), "steps\\step4\\temp.obj")
+        temp_file_path_out = os.path.join(os.getcwd(), "steps\\step4")
+        self.temp_file_path = temp_file_path_in
+        normalizer = ShapeNormalizer()
+        normalizer.select_and_normalize_single_file(temp_file_path_out, temp_file_path_in)
+        return temp_file_path_out 
+    
 
     # Function for opening the file and setting all stats according to the file
     def open_file_dialog(self):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self, "Open OBJ File", "", "OBJ Files (*.obj);;All Files (*)", options=options)
         if fileName:
+            #Resampling and normilisation of the object saved in temp.obj
+            #print(self.resamp_norm_Obj(fileName))            
+            #Visualising object in main widget
             self.opengl_widget.load_obj_file(fileName)
             self.file_display.setText(fileName)
             self.opengl_widget.toggle_vertices()
-            self.opengl_widget.toggle_faces()
+            self.opengl_widget.toggle_faces()            
+            # Set the text for the additional statistics
             self.vertices_display.setText(str(self.opengl_widget.get_vertices_count()))
             self.faces_display.setText(str(self.opengl_widget.get_faces_count()))
-            self.shape = ObjectCalculations(fileName)
-            # Set the text for the additional statistics
+            #Calculate descriptors
+            self.shape = ObjectCalculations(fileName)            
             self.surface_area_display.setText(str(self.shape.surfaceAreaObj))
             self.volume_display.setText(str(self.shape.volume))
             self.compactness_display.setText(str(self.shape.compactnessObj))
@@ -600,7 +615,7 @@ class MainWindow(QMainWindow):
             self.diameter_display.setText(str(self.shape.diameterObj))
             self.convexity_display.setText(str(self.shape.convexityObj))
             self.eccentricity_display.setText(str(self.shape.eccentricityObj))
-            self.displaySmallerWidgets(fileName)
+            
 
 if __name__ == '__main__':
 

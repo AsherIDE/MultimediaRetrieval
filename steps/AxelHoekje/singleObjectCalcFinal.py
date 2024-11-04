@@ -22,7 +22,6 @@ class ObjectCalculations:
         self.A3, self.D1, self.D2, self.D3, self.D4 = self.compute_all_histograms()
         
     def getAllDescriptors(self):
-        print(self.surfaceAreaObj,self.compactnessObj,self.rectangularityObj,self.diameterObj, self.convexityObj,self.eccentricityObj, self.A3, self.D1, self.D2, self.D3, self.D4    )
         return self.surfaceAreaObj,self.compactnessObj,self.rectangularityObj,self.diameterObj, self.convexityObj,self.eccentricityObj, self.A3, self.D1, self.D2, self.D3, self.D4    
     def getGlobalDescriptors(self):
         return self.A3, self.D1, self.D2, self.D3, self.D4

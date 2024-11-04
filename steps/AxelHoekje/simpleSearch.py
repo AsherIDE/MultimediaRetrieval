@@ -9,7 +9,7 @@ from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
 from fullNormalize import ShapeNormalizer
-from datasetResamplingV2 import resample
+from MultimediaRetrieval.steps.AxelHoekje.dataResampleFinal import resample
 from singleObjectCalcFinal import ObjectCalculations
 
 from scipy.stats import wasserstein_distance
