@@ -12,8 +12,7 @@ def resample(meshFile, meshClass, aim=4000, deviation=0.9, searchTask=False):
 
     # mesh initiation
     ms = ml.MeshSet()
-    ms.load_new_mesh("ShapeDatabase_INFOMR-master/" + meshClass + "/" + meshFile)
-
+    ms.load_new_mesh("MultimediaRetrieval/ShapeDatabase_INFOMR-master/" + meshClass + "/" + meshFile)
     vertices =  ms.current_mesh().vertex_number()
 
     # ------ Upsampling ------
@@ -81,6 +80,7 @@ def resample(meshFile, meshClass, aim=4000, deviation=0.9, searchTask=False):
 
 
     # keep on up- and downsampling until threshold or if its impossible just stop
+    print("Start resampling")
     prev_resampling_func = ""
     iteration = 0
     while True:
@@ -104,6 +104,7 @@ def resample(meshFile, meshClass, aim=4000, deviation=0.9, searchTask=False):
             prev_resampling_func = "down"
 
         else:
+           print("oof")
            break
 
         iteration += 1
@@ -114,8 +115,9 @@ def resample(meshFile, meshClass, aim=4000, deviation=0.9, searchTask=False):
     if searchTask == False:
         ms.save_current_mesh("ShapeDatabase_INFOMR-resampledV2/" + meshClass + "/" + meshFile)
     else:
-        ms.save_current_mesh("steps/step4/temp.obj")
-    
+        print("saved")
+        ms.save_current_mesh("temp.obj")
+
     vertices =  ms.current_mesh().vertex_number()
     print(f"[Finished] resample: {meshFile} with {vertices} vertices")
 

@@ -10,7 +10,7 @@ import numpy as np
 from singleObjectCalcFinal import ObjectCalculations
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
-#from dataResampleFinal import resample
+from dataResampleFinal import resample
 from fullNormalize import ShapeNormalizer
 from simpleSearch import Object
 
@@ -583,12 +583,12 @@ class MainWindow(QMainWindow):
         class_name = os.path.basename(os.path.dirname(fileName))
         obj_name = os.path.basename(fileName)
         resample(obj_name, class_name, aim=4000, deviation=0.9, searchTask=True)
-        temp_file_path_in = os.path.join(os.getcwd(), "steps\\step4\\temp.obj")
-        temp_file_path_out = os.path.join(os.getcwd(), "steps\\step4")
+        temp_file_path_in = os.path.join(os.getcwd(), "temp.obj")
+        temp_file_path_out = os.path.join(os.getcwd(), "")
         self.temp_file_path = temp_file_path_in
         normalizer = ShapeNormalizer()
         normalizer.select_and_normalize_single_file(temp_file_path_out, temp_file_path_in)
-        return temp_file_path_out 
+        return temp_file_path_in
     
 
     # Function for opening the file and setting all stats according to the file
@@ -597,17 +597,19 @@ class MainWindow(QMainWindow):
         fileName, _ = QFileDialog.getOpenFileName(self, "Open OBJ File", "", "OBJ Files (*.obj);;All Files (*)", options=options)
         if fileName:
             #Resampling and normilisation of the object saved in temp.obj
-            #print(self.resamp_norm_Obj(fileName))            
+            resampled_normalised_fileName = self.resamp_norm_Obj(fileName)
+
             #Visualising object in main widget
-            self.opengl_widget.load_obj_file(fileName)
+            self.opengl_widget.load_obj_file(resampled_normalised_fileName)
             self.file_display.setText(fileName)
             self.opengl_widget.toggle_vertices()
-            self.opengl_widget.toggle_faces()            
+            self.opengl_widget.toggle_faces()
+
             # Set the text for the additional statistics
             self.vertices_display.setText(str(self.opengl_widget.get_vertices_count()))
             self.faces_display.setText(str(self.opengl_widget.get_faces_count()))
             #Calculate descriptors
-            self.shape = ObjectCalculations(fileName)            
+            self.shape = ObjectCalculations(resampled_normalised_fileName)            
             self.surface_area_display.setText(str(self.shape.surfaceAreaObj))
             self.volume_display.setText(str(self.shape.volume))
             self.compactness_display.setText(str(self.shape.compactnessObj))
