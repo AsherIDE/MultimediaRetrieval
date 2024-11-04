@@ -188,6 +188,8 @@ class Object:
         # make all distance values positive
         df_distances = pd.concat([df_distances[["name", "class"]], df_distances.iloc[ :, 2:13].abs()], axis=1)
         
+        # df_distances = df_distances.drop(["D1"], axis=1)
+
         # grab mean distance from all features of a single object (row mean)
         df_distances["closeness"] = df_distances.iloc[ :, 2:13].mean(axis=1) # 7 to skip hist features
         print(df_distances)
@@ -198,5 +200,5 @@ class Object:
 
         print("[Finished] distances: feature distance computations done")
 
-object = Object(bins=93, n=100000)
+object = Object(bins=93, n=10000)
 object.load()
