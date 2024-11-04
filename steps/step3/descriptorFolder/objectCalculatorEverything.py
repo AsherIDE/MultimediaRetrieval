@@ -9,24 +9,7 @@ class ObjectCalculations:
     def __init__(self, obj_file):
         self.obj_file = obj_file
         self.vertices, self.faces, self.SurfaceArea, self.volume, self.barycenter = self.load_obj(obj_file)
-        #LocalDescriptorsForTesting
-        self.convex_hull_volume = self.calculate_convex_hull_volume()
-        self.eigenvalues = self.calculate_eigenvalues()
-        self.obb_volume = self.calculate_obb_volume()
-        self.surfaceAreaObj = self.calcSurfaceArea()
-        self.compactnessObj = self.calcCompactness()
-        self.rectangularityObj = self.rectangularity()
-        self.diameterObj = self.diameter()
-        self.convexityObj = self.convexity()
-        self.eccentricityObj = self.eccentricity()                
-        #GlobalDescriptorsForTesting
-        N = 100000
-        numberBins = 93
-        self.A3 = self.compute_histogram(self.compute_A3, N, numberBins)
-        self.D1 = self.compute_histogram(self.compute_D1, N, numberBins)
-        self.D2 = self.compute_histogram(self.compute_D2, N, numberBins)
-        self.D3 = self.compute_histogram(self.compute_D3, N, numberBins)
-        self.D4 = self.compute_histogram(self.compute_D4, N, numberBins)
+        self.D1 = self.compute_histogram(self.compute_D1, 4000, 93)
         
         
     def write_to_csv(self):
@@ -36,16 +19,13 @@ class ObjectCalculations:
         # Get the part before the last part (directory name)
         second_to_last_part = os.path.basename(os.path.dirname(self.obj_file))
         # Convert histogram data to string to avoid issues with CSV formatting
-        A3_str = ','.join(map(str, self.A3))
         D1_str = ','.join(map(str, self.D1))
-        D2_str = ','.join(map(str, self.D2))
-        D3_str = ','.join(map(str, self.D3))
-        D4_str = ','.join(map(str, self.D4))
+
         
         data = [
-            last_part, second_to_last_part, self.surfaceAreaObj, self.compactnessObj, self.rectangularityObj, self.diameterObj, self.convexityObj, self.eccentricityObj, A3_str, D1_str, D2_str, D3_str, D4_str
+            last_part, second_to_last_part, D1_str
         ]
-        file_path = 'MultimediaRetrieval\steps\step3\descriptorFolder\descriptorsResampledNormalisedData.csv'
+        file_path = 'MultimediaRetrieval\steps\step3\descriptorFolder\D1.csv'
         # Check if the file exists to write headers
         file_exists = os.path.isfile(file_path)    
         # Open the file in append mode
@@ -53,7 +33,7 @@ class ObjectCalculations:
             writer = csv.writer(file)
             # Write the headers if the file is new
             if not file_exists:
-                writer.writerow(['name', 'class', 'surfaceAreaObj', 'compactnessObj', 'rectangularityObj', 'diameterObj', 'convexityObj', 'eccentricityObj', 'A3', 'D1', 'D2', 'D3', 'D4'])
+                writer.writerow(['name', 'class', 'D1'])
             # Write the data as a new row
             writer.writerow(data)
 
@@ -169,11 +149,9 @@ class ObjectCalculations:
         barycenter = self.barycenter
         distances = []
         print('Started D1')
-        for _ in range(num_samples):
-            # Randomly select a vertex
-            random_vertex = random.choice(self.vertices)
+        for  v in self.vertices:
             # Calculate the distance between the barycenter and the random vertex
-            distance = np.linalg.norm(barycenter - random_vertex)
+            distance = np.linalg.norm(barycenter - v)
             distances.append(distance)    
         return distances
     
@@ -216,7 +194,7 @@ class ObjectCalculations:
     def compute_D4(self, num_samples):
         volumes = []
         ('Started D4')      
-        for _ in range(num_samples):
+        for _ in range(self.vertices):
             # Randomly select four distinct vertices
             v1, v2, v3, v4 = random.sample(list(self.vertices), 4)           
             # Calculate the volume of the tetrahedron formed by the four vertices
@@ -260,5 +238,5 @@ def process_file(folder_path):
         obj_calc.write_to_csv()
 
 #Remove #s to do all the normalized shapes
-folder_path = 'MultimediaRetrieval/NormalizedShapes-resampledPart'
+folder_path = 'MultimediaRetrieval/NormalizedShapes-resampled'
 process_folder(folder_path)

@@ -4,6 +4,7 @@ import csv
 import os
 from scipy.spatial import ConvexHull
 from math import pi
+import pandas as pd
 import multiprocessing
 
 class ObjectCalculations:
@@ -20,7 +21,65 @@ class ObjectCalculations:
         self.convexityObj = self.convexity()
         self.eccentricityObj = self.eccentricity()
         self.A3, self.D1, self.D2, self.D3, self.D4 = self.compute_all_histograms()
+        self.single_val_features = ["surfaceAreaObj","compactnessObj","rectangularityObj","diameterObj","convexityObj","eccentricityObj"]
+        self.hist_features = ["A3","D1","D2","D3","D4"]
         
+
+    def get_descriptors(self):
+        descriptors = {
+            "convex_hull_volume": self.convex_hull_volume,
+            "eigenvalues": self.eigenvalues,
+            "obb_volume": self.obb_volume,
+            "surfaceAreaObj": self.surfaceAreaObj,
+            "compactnessObj": self.compactnessObj,
+            "rectangularityObj": self.rectangularityObj,
+            "diameterObj": self.diameterObj,
+            "convexityObj": self.convexityObj,
+            "eccentricityObj": self.eccentricityObj,
+            "A3": self.A3,
+            "D1": self.D1,
+            "D2": self.D2,
+            "D3": self.D3,
+            "D4": self.D4
+        }
+        return descriptors
+
+    def normalizeFeatures(self):
+        # get features of preprocessed search object
+        self.features = self.get_descriptors()
+        
+        del self.features['convex_hull_volume']
+        del self.features['eigenvalues']
+        del self.features['obb_volume']
+
+        # load values to standardize with
+        df_features_means_stds = pd.read_csv("MultimediaRetrieval\steps\AxelHoekje\searchStandardizationData.csv")
+
+        # standardize single-value features (hist features already done)
+        for single_val_feature in self.single_val_features:
+            mean = df_features_means_stds.at[0, single_val_feature]
+            std = df_features_means_stds.at[1, single_val_feature]
+
+            # update the value itself
+            self.features[single_val_feature] = abs((self.features[single_val_feature] - mean) / std)
+        self.surfaceAreaObj = self.features["surfaceAreaObj"]
+        self.compactnessObj = self.features["compactnessObj"]
+        self.rectangularityObj = self.features["rectangularityObj"]
+        self.diameterObj = self.features["diameterObj"]
+        self.convexityObj = self.features["convexityObj"]
+        self.eccentricityObj = self.features["eccentricityObj"]
+        self.A3 = self.features["A3"]
+        self.D1 = self.features["D1"]
+        self.D2 = self.features["D2"]
+        self.D3 = self.features["D3"]
+        self.D4 = self.features["D4"]
+        print(self.features)
+
+        print(f"[Finished] features: search object feature extraction and normalization complete")
+        
+    
+
+
     def getAllDescriptors(self):
         return self.surfaceAreaObj,self.compactnessObj,self.rectangularityObj,self.diameterObj, self.convexityObj,self.eccentricityObj, self.A3, self.D1, self.D2, self.D3, self.D4    
     def getGlobalDescriptors(self):

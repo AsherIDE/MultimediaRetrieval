@@ -7,6 +7,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt5.QtGui import QFont
 import numpy as np
+
 from singleObjectCalcFinal import ObjectCalculations
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
@@ -14,6 +15,7 @@ from dataResampleFinal import resample
 from fullNormalize import ShapeNormalizer
 from simpleSearch import searchObject
 import re
+from advancedSearch import methode
 
 class SmallerWidget(QGLWidget):
     def __init__(self, parent=None):
@@ -349,6 +351,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Object testing')
+        self.fileName = ""
         self.file_pathResampled = ""
         self.temp_file_pathResampled = ""
         self.opengl_widget = OpenGLWidget(self)
@@ -435,7 +438,7 @@ class MainWindow(QMainWindow):
         self.side_layout.addWidget(self.simple_search_button)
         
         #Simple objects advanced
-        self.adv_search_button = QPushButton('Find similar objects (simple)', self)
+        self.adv_search_button = QPushButton('Find similar objects (advanced)', self)
         self.adv_search_button.clicked.connect(self.perform_adv_search)
         self.side_layout.addWidget(self.adv_search_button)
         
@@ -471,12 +474,6 @@ class MainWindow(QMainWindow):
         self.surface_area_display = QLineEdit(self)
         self.surface_area_display.setReadOnly(True)
         self.side_layout.addWidget(self.surface_area_display)
-
-        self.volume_label = QLabel('Volume:', self)
-        self.side_layout.addWidget(self.volume_label)
-        self.volume_display = QLineEdit(self)
-        self.volume_display.setReadOnly(True)
-        self.side_layout.addWidget(self.volume_display)
 
         self.compactness_label = QLabel('Compactness:', self)
         self.side_layout.addWidget(self.compactness_label)
@@ -547,7 +544,14 @@ class MainWindow(QMainWindow):
         self.displaySmallerWidgets(combined, distances)
 
     def perform_adv_search(self):
-        print("Advanced search")
+        combined_array = methode(os.path.basename(self.fileName))
+        results = []
+        distances = []
+
+        for item in combined_array:
+            results.append(item[0])
+            distances.append(item[1])
+        self.displaySmallerWidgets(results, distances)
 
     # Define the method to handle the button click
     def show_global_descriptors(self):
@@ -612,6 +616,7 @@ class MainWindow(QMainWindow):
     def open_file_dialog(self):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self, "Open OBJ File", "", "OBJ Files (*.obj);;All Files (*)", options=options)
+        self.fileName = fileName
         if fileName:
             #Resampling and normilisation of the object saved in temp.obj
             resampled_normalised_fileName = self.resamp_norm_Obj(fileName)
@@ -626,9 +631,9 @@ class MainWindow(QMainWindow):
             self.vertices_display.setText(str(self.opengl_widget.get_vertices_count()))
             self.faces_display.setText(str(self.opengl_widget.get_faces_count()))
             #Calculate descriptors
-            self.shape = ObjectCalculations(resampled_normalised_fileName)            
+            self.shape = ObjectCalculations(resampled_normalised_fileName)
+            self.shape.normalizeFeatures()            
             self.surface_area_display.setText(str(self.shape.surfaceAreaObj))
-            self.volume_display.setText(str(self.shape.volume))
             self.compactness_display.setText(str(self.shape.compactnessObj))
             self.rectangularity_display.setText(str(self.shape.rectangularityObj))
             self.diameter_display.setText(str(self.shape.diameterObj))
