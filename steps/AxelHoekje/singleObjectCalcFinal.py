@@ -21,7 +21,12 @@ class ObjectCalculations:
         self.eccentricityObj = self.eccentricity()
         self.A3, self.D1, self.D2, self.D3, self.D4 = self.compute_all_histograms()
         
-        
+    def getAllDescriptors(self):
+        print(self.surfaceAreaObj,self.compactnessObj,self.rectangularityObj,self.diameterObj, self.convexityObj,self.eccentricityObj, self.A3, self.D1, self.D2, self.D3, self.D4    )
+        return self.surfaceAreaObj,self.compactnessObj,self.rectangularityObj,self.diameterObj, self.convexityObj,self.eccentricityObj, self.A3, self.D1, self.D2, self.D3, self.D4    
+    def getGlobalDescriptors(self):
+        return self.A3, self.D1, self.D2, self.D3, self.D4
+
     def write_to_csv(self):
         # Summarize the lists by taking their mean
         last_part = os.path.basename(self.obj_file)
@@ -220,7 +225,7 @@ class ObjectCalculations:
         return volumes
 
     def compute_all_histograms(self):
-        N = 100000
+        N = 1000
         numberBins = 93
         with multiprocessing.Pool(processes=5) as pool:
             results = pool.starmap(self.compute_histogram, [
@@ -238,11 +243,3 @@ class ObjectCalculations:
         histogram = histogram / np.sum(histogram)
         return histogram
 
-def process_file(obj_file_path):
-    print(f"Processing file: {obj_file_path}")
-    obj_calc = ObjectCalculations(obj_file_path)
-    obj_calc.write_to_csv()
-
-if __name__ == "__main__":
-    obj_file_path = 'C:/Users/axelv/OneDrive/Desktop/MediaRetrieval/MultimediaRetrieval/NormalizedShapes-resampled/AircraftBuoyant/m1337_normalized.obj'
-    process_file(obj_file_path)

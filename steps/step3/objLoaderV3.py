@@ -343,6 +343,7 @@ class MainWindow(QMainWindow):
         container = QWidget()
         container.setLayout(main_layout_with_bottom)
         self.setCentralWidget(container)
+        
 ############################################################################################
 #Functions for local descriptors and global descriptors as histograms
 ############################################################################################
