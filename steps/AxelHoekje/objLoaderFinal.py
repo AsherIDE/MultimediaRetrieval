@@ -15,7 +15,7 @@ from dataResampleFinal import resample
 from fullNormalize import ShapeNormalizer
 from simpleSearch import searchObject
 import re
-from advancedSearch import methode
+from searchANN import methode
 
 class SmallerWidget(QGLWidget):
     def __init__(self, parent=None):

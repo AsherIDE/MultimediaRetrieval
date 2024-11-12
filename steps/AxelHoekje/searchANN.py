@@ -7,18 +7,30 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 class KNNEngine:
-    def __init__(self, feature_dim):
+    def __init__(self, feature_dim, nlist=100, nprobe=10):
         self.feature_dim = feature_dim
-        self.index = faiss.IndexFlatL2(self.feature_dim)
+        self.nlist = nlist  # Number of clusters
+        self.nprobe = nprobe  # Number of clusters to search within
+
+        # Initialize a quantizer for clustering
+        self.quantizer = faiss.IndexFlatL2(feature_dim)  
+        # Create an IVF index for approximate search
+        self.index = faiss.IndexIVFFlat(self.quantizer, feature_dim, nlist)
+        self.index.nprobe = nprobe  # Set the number of clusters to search
 
     def build_index(self, features):
         features = np.ascontiguousarray(features, dtype=np.float32)
+        # Train the index for clustering (necessary for IVF)
+        self.index.train(features)
+        # Add features to the index
         self.index.add(features)
 
     def query(self, query_vector, k=5):
         query_vector = np.ascontiguousarray(query_vector.reshape(1, -1), dtype=np.float32)
-        distances, indices = self.index.search(query_vector, k + 1)  
-        indices, distances = indices[0][1:k+1], distances[0][1:k+1]  
+        # Perform the ANN search
+        distances, indices = self.index.search(query_vector, k + 1)
+        # Exclude the query itself from results
+        indices, distances = indices[0][1:k+1], distances[0][1:k+1]
         return indices, distances
 
 class DimensionalityReducer:
@@ -34,7 +46,7 @@ def parse_descriptor_columns(df):
     for col in ['A3', 'D1', 'D2', 'D3', 'D4']:
         df[col] = df[col].apply(lambda x: np.fromstring(x, sep=','))
 
-    feature_matrix = np.hstack([    
+    feature_matrix = np.hstack([
         df['surfaceAreaObj'].values.reshape(-1, 1),
         df['compactnessObj'].values.reshape(-1, 1),
         df['rectangularityObj'].values.reshape(-1, 1),
@@ -62,32 +74,25 @@ def load_descriptors(csv_filepath):
 def visualize_tsne_2d(reduced_features, labels, highlight_index=None, title="t-SNE Visualization"):
     plt.figure(figsize=(12, 8))
     
-    # Generate a colormap with enough colors for all unique classes
     unique_labels = np.unique(labels)
     colors = cm.get_cmap("tab20", len(unique_labels))  # Use 'tab20' for up to 20 distinct colors
 
-    # Plot each class with its color
     for idx, label in enumerate(unique_labels):
         indices = np.where(labels == label)
         plt.scatter(reduced_features[indices, 0], reduced_features[indices, 1], 
                     label=label, color=colors(idx), s=50, alpha=0.7)
 
-    # Highlight the specific point if provided
     if highlight_index is not None:
         plt.scatter(reduced_features[highlight_index, 0], reduced_features[highlight_index, 1], 
                     color='red', s=100, edgecolor='black', label='Selected Shape', zorder=5)
 
-    # Set titles and labels
     plt.title(title, fontsize=16)
     plt.xlabel('Component 1', fontsize=12)
     plt.ylabel('Component 2', fontsize=12)
-
-    # Place legend outside the plot
     plt.legend(title="Class", bbox_to_anchor=(1.05, 1), loc='upper left', 
                borderaxespad=0., fontsize='small', ncol=2)
     plt.grid(True)
-    plt.tight_layout()  # Adjust layout to fit everything nicely
-
+    plt.tight_layout()
     plt.show()
 
 def select_shape_by_name(df, filePath):
@@ -105,14 +110,19 @@ def methode(filePath):
     if df is None or features is None:
         print("Failed to load descriptors. Exiting.")
         return
-    knn = KNNEngine(feature_dim=features.shape[1])
+
+    # Initialize KNN engine with ANN using IVF indexing
+    knn = KNNEngine(feature_dim=features.shape[1], nlist=100, nprobe=10)
     knn.build_index(features)
+
     selected_shape_idx = select_shape_by_name(df, filePath)
     if selected_shape_idx is None:
         return
+
     query_vector = features[selected_shape_idx]
     k = 5
     neighbors, distances = knn.query(query_vector, k=k)
+
     print(f"Query shape: {df.iloc[selected_shape_idx]['name']}")
     print("K-Nearest Neighbors:")
     combined_array = []
@@ -121,8 +131,10 @@ def methode(filePath):
         shape_class = df.iloc[neighbor_idx]['class']
         combined_array.append([(f"{shape_class}/{shape_name}"), distances[i]])
         print(f"{i + 1}: Shape = {shape_name}, Class = {shape_class}, Distance = {distances[i]}")
+
     dr = DimensionalityReducer(features)
     reduced_features = dr.apply_tsne()
+
     labels = df['class'].values
-    visualize_tsne_2d(reduced_features, labels, highlight_index=selected_shape_idx)  # Highlight the selected shape
+    visualize_tsne_2d(reduced_features, labels, highlight_index=selected_shape_idx)
     return combined_array

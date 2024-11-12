@@ -74,7 +74,7 @@ class OpenGLWidget(QGLWidget):
 
     #Painting the background
     def paintGL(self):
-        glClearColor(0.878, 1.000, 1.000, 0.0)
+        glClearColor(1.0, 1.000, 1.000, 0.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
         # Apply camera translation before rendering the object
@@ -93,7 +93,7 @@ class OpenGLWidget(QGLWidget):
     #Drawing the vertices   
     def draw_vertices(self):
         glBegin(GL_POINTS)
-        glColor3f(1.0, 0.0, 1.0)
+        glColor3f(0.412, 0.412, 0.412)
         for vertex in self.vertices:
             glVertex3fv(vertex)
         glEnd()
@@ -115,7 +115,7 @@ class OpenGLWidget(QGLWidget):
     #Drawing the faces
     def draw_faces(self):
         glBegin(GL_TRIANGLES)
-        glColor4f(0.867, 0.627, 0.867, 0.8)
+        glColor4f(0.502, 0.502, 0.502, 0.8)
         for face in self.faces:
             for vertex_idx in face:
                 glVertex3fv(self.vertices[vertex_idx])
