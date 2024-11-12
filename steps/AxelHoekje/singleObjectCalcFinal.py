@@ -223,11 +223,10 @@ class ObjectCalculations:
     def compute_D1(self, num_samples):
         barycenter = self.barycenter
         distances = []
-        for _ in range(num_samples):
-            # Randomly select a vertex
-            random_vertex = random.choice(self.vertices)
-            # Calculate the distance between the barycenter and the random vertex
-            distance = np.linalg.norm(barycenter - random_vertex)
+        print('Started D1')
+        for  v in self.vertices:
+            # Calculate the distance between the barycenter and each vertex
+            distance = np.linalg.norm(barycenter - v)
             distances.append(distance)    
         return distances
     
