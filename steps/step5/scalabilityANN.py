@@ -128,7 +128,7 @@ def main():
     neighbors, distances = knn.query(query_vector, k=k)
 
     print(f"Query shape: {df.iloc[selected_shape_idx]['name']}")
-    print("K-Nearest Neighbors:")
+    print("Nearest Neighbors:")
     for i, neighbor_idx in enumerate(neighbors):
         shape_name = df.iloc[neighbor_idx]['name']
         shape_class = df.iloc[neighbor_idx]['class']
