@@ -108,7 +108,7 @@ def select_shape_by_name(df):
     return selected_shape_idx[0]
 
 def main():
-    csv_filepath = r'C:\Universiteit\MultimediaRetrieval\steps\step3\descriptorFolder\descriptorsResampledNormalisedData.csv'
+    csv_filepath = r'C:\Universiteit\MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv'
 
     df, features = load_descriptors(csv_filepath)
     if df is None or features is None:
