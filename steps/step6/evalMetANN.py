@@ -96,7 +96,7 @@ def calculate_precision_recall(df, knn_engine, feature_matrix, k=7):
     return avg_precision_per_class, avg_recall_per_class, overall_precision, overall_recall
 
 def main():
-    csv_filepath = r'C:\Universiteit\MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv'
+    csv_filepath = r'MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv'
 
     # Load the descriptors
     df, feature_matrix = load_descriptors(csv_filepath)
