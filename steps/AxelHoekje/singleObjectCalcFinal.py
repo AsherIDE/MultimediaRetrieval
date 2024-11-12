@@ -278,7 +278,7 @@ class ObjectCalculations:
         return volumes
 
     def compute_all_histograms(self):
-        N = 1000
+        N = 100000
         numberBins = 93
         with multiprocessing.Pool(processes=5) as pool:
             results = pool.starmap(self.compute_histogram, [
