@@ -79,7 +79,7 @@ class searchObject:
                 "D3": search_object_features[9],
                 "D4": search_object_features[10]
             }
-            print("[Info] features: search object features extracted for search task!")
+            # print("[Info] features: search object features extracted for search task!")
 
             
         # compare object to dataset
@@ -115,7 +115,7 @@ class searchObject:
         del self.features['obb_volume']
 
         # load values to standardize with
-        df_features_means_stds = pd.read_csv("MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv")
+        df_features_means_stds = pd.read_csv("MultimediaRetrieval/steps\AxelHoekje\dataBaseFinal.csv")
 
         # standardize single-value features (hist features already done)
         for single_val_feature in self.single_val_features:
@@ -127,11 +127,11 @@ class searchObject:
 
         print(self.features)
 
-        print(f"[Finished] features: search object feature extraction and normalization complete")
+        # print(f"[Finished] features: search object feature extraction and normalization complete")
 
 
     def compare(self):
-        df = pd.read_csv("MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv")
+        df = pd.read_csv("MultimediaRetrieval/steps\AxelHoekje\dataBaseFinal.csv")
 
         # euclidean distance (hist features)
         # distance_features = {}
@@ -213,10 +213,10 @@ class searchObject:
 
         # grab mean distance from all features of a single object (row mean)
         df_distances["closeness"] = df_distances.iloc[ :, 2:13].mean(axis=1) # 7 to skip hist features
-        # print(df_distances)
+        
         # update distances
         self.distances = df_distances[["name", "class", "closeness"]]
         self.distances = self.distances.sort_values(["closeness"], ascending=True)
-        self.distances.to_csv("searchResult.csv", index=False)
+        # self.distances.to_csv("searchResult.csv", index=False)
 
-        print("[Finished] distances: feature distance computations done")
+        # print("[Finished] distances: feature distance computations done")
