@@ -18,7 +18,7 @@ class KNNEngine:
         self.index = faiss.IndexIVFFlat(self.quantizer, feature_dim, nlist)
         self.index.nprobe = nprobe  # Set the number of clusters to search
 
-    def build_index(self, features):
+    def buildIndex(self, features):
         features = np.ascontiguousarray(features, dtype=np.float32)
         # Train the index for clustering (necessary for IVF)
         self.index.train(features)
@@ -37,12 +37,12 @@ class DimensionalityReducer:
     def __init__(self, features):
         self.features = features
 
-    def apply_tsne(self):
+    def applyTsne(self):
         tsne = TSNE(n_components=2, perplexity=30, n_iter=1000, random_state=42)
         reduced_features = tsne.fit_transform(self.features)
         return reduced_features
 
-def parse_descriptor_columns(df):
+def parseDescriptorColumns(df):
     for col in ['A3', 'D1', 'D2', 'D3', 'D4']:
         df[col] = df[col].apply(lambda x: np.fromstring(x, sep=','))
 
@@ -61,17 +61,17 @@ def parse_descriptor_columns(df):
     ])
     return feature_matrix
 
-def load_descriptors(csv_filepath):
+def loadDescriptors(csv_filepath):
     if os.path.exists(csv_filepath):
         print("File found! Loading...")
         df = pd.read_csv(csv_filepath)
-        feature_matrix = parse_descriptor_columns(df)
+        feature_matrix = parseDescriptorColumns(df)
         return df, feature_matrix
     else:
         print(f"File not found at: {csv_filepath}")
         return None, None
 
-def visualize_tsne_2d(reduced_features, labels, highlight_index=None, title="t-SNE Visualization"):
+def visualizeTsne2d(reduced_features, labels, highlight_index=None, title="t-SNE Visualization"):
     plt.figure(figsize=(12, 8))
     
     unique_labels = np.unique(labels)
@@ -95,7 +95,7 @@ def visualize_tsne_2d(reduced_features, labels, highlight_index=None, title="t-S
     plt.tight_layout()
     plt.show()
 
-def select_shape_by_name(df):
+def selectShapeByName(df):
     print("Available shapes:")
     for index, row in df.iterrows():
         print(f"- {row['name']}")
@@ -110,16 +110,16 @@ def select_shape_by_name(df):
 def main():
     csv_filepath = r'C:\Universiteit\MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv'
 
-    df, features = load_descriptors(csv_filepath)
+    df, features = loadDescriptors(csv_filepath)
     if df is None or features is None:
         print("Failed to load descriptors. Exiting.")
         return
 
     # Initialize KNN engine with ANN using IVF indexing
     knn = KNNEngine(feature_dim=features.shape[1], nlist=100, nprobe=10)
-    knn.build_index(features)
+    knn.buildIndex(features)
 
-    selected_shape_idx = select_shape_by_name(df)
+    selected_shape_idx = selectShapeByName(df)
     if selected_shape_idx is None:
         return
 
@@ -135,10 +135,10 @@ def main():
         print(f"{i + 1}: Shape = {shape_name}, Class = {shape_class}, Distance = {distances[i]}")
 
     dr = DimensionalityReducer(features)
-    reduced_features = dr.apply_tsne()
+    reduced_features = dr.applyTsne()
 
     labels = df['class'].values
-    visualize_tsne_2d(reduced_features, labels, highlight_index=selected_shape_idx)
+    visualizeTsne2d(reduced_features, labels, highlight_index=selected_shape_idx)
 
 if __name__ == "__main__":
     main()

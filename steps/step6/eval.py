@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 import faiss
 
-# zelfde als deel 5 jaajjaaj
-def parse_descriptor_columns(df):
+# Parse descriptor columns
+def parseDescriptorColumns(df):
     for col in ['A3', 'D1', 'D2', 'D3', 'D4']:
         df[col] = df[col].apply(lambda x: np.fromstring(x, sep=','))
     feature_matrix = np.hstack([    
@@ -23,23 +23,23 @@ def parse_descriptor_columns(df):
     return feature_matrix
 
 # Load descriptors with parsed columns
-def load_descriptors(csv_filepath):
+def loadDescriptors(csv_filepath):
     if os.path.exists(csv_filepath):
         print("File found! Loading...")
         df = pd.read_csv(csv_filepath)
-        feature_matrix = parse_descriptor_columns(df)
+        feature_matrix = parseDescriptorColumns(df)
         return df, feature_matrix
     else:
         print(f"File not found at: {csv_filepath}")
         return None, None
 
-# FAISS-based KNN Engine for Evaluation
+# KNN Engine
 class KNNEvaluationEngine:
     def __init__(self, feature_dim):
         self.feature_dim = feature_dim
         self.index = faiss.IndexFlatL2(self.feature_dim)  # Initialize FAISS with L2 (Euclidean) distance
 
-    def build_index(self, features):
+    def buildIndex(self, features):
         features = np.ascontiguousarray(features, dtype=np.float32)  # Ensure correct format
         self.index.add(features)  # Add features to the FAISS index
 
@@ -50,7 +50,7 @@ class KNNEvaluationEngine:
         return indices, distances
 
 # Calculate precision and recall
-def calculate_precision_recall(df, knn_engine, feature_matrix, k=7):
+def calculatePrecisionRecall(df, knn_engine, feature_matrix, k=7):
     correct_matches = 0
     total_relevant = 0
     total_retrieved = 0
@@ -85,7 +85,7 @@ def calculate_precision_recall(df, knn_engine, feature_matrix, k=7):
     avg_precision_per_class = {cls: np.mean(precisions) for cls, precisions in precision_per_class.items()}
     avg_recall_per_class = {cls: np.mean(recalls) for cls, recalls in recall_per_class.items()}
 
-    # Grand aggregate (overall precision and recall)
+    # Show overall precision and recall
     overall_precision = correct_matches / total_retrieved if total_retrieved > 0 else 0
     overall_recall = correct_matches / total_relevant if total_relevant > 0 else 0
 
@@ -95,22 +95,22 @@ def main():
     csv_filepath = r'C:/Universiteit/HCI/MultimediaRetrieval/steps/descriptorsResampledNormalisedData.csv'
 
     # Load the descriptors
-    df, feature_matrix = load_descriptors(csv_filepath)
+    df, feature_matrix = loadDescriptors(csv_filepath)
     if df is None or feature_matrix is None:
         print("Failed to load descriptors. Exiting.")
         return
 
     # Initialize and build the FAISS index
     knn_engine = KNNEvaluationEngine(feature_dim=feature_matrix.shape[1])
-    knn_engine.build_index(feature_matrix)
+    knn_engine.buildIndex(feature_matrix)
 
     # Set K for KNN
-    k = 7
+    k = 5
 
     # Calculate precision and recall
-    avg_precision_per_class, avg_recall_per_class, overall_precision, overall_recall = calculate_precision_recall(df, knn_engine, feature_matrix, k=k)
+    avg_precision_per_class, avg_recall_per_class, overall_precision, overall_recall = calculatePrecisionRecall(df, knn_engine, feature_matrix, k=k)
 
-    # Display results
+    # Show the results in terminal 
     print("Average Precision per Class:")
     for cls, precision in avg_precision_per_class.items():
         print(f"Class {cls}: Precision = {precision:.2f}")

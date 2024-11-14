@@ -7,8 +7,8 @@ class ShapeNormalizer:
     def __init__(self):
         self.vertices = []
         self.faces = []
-
-    def load_obj_file(self, fileName):
+#load objects
+    def loadObjFile(self, fileName):
         self.vertices = []
         self.faces = []
         with open(fileName, 'r') as file:
@@ -17,36 +17,34 @@ class ShapeNormalizer:
                     self.vertices.append(list(map(float, line.strip().split()[1:])))
                 elif line.startswith('f '):  # Read face
                     self.faces.append([int(idx.split('/')[0]) - 1 for idx in line.strip().split()[1:]])
-        self.vertices = np.array(self.vertices)  # Convert to numpy array for easier manipulation
+        self.vertices = np.array(self.vertices)  # Convert to numpy array 
 
-    def update(self):
-        pass  # You can add any real-time viewer updates here if needed
-
-    def normalize_shape(self):
+    #different steps of normalization
+    def normalizeShape(self):
         # Center the shape at the origin
-        self.center_shape()
+        self.centerShape()
         # Scale the shape to fit inside a unit cube
-        self.scale_shape()
+        self.scaleShape()
         # Align the shape using PCA
-        self.align_shape()
-        # Flip the shape using moment tests
-        self.flip_shape()
+        self.alignShape()
+        # Flip the shape 
+        self.flipShape()
         # Update after all transformations
         self.update()
 
-    def center_shape(self):
-        """Translate the shape to center it at the origin."""
+    def centerShape(self):
+        #Translate the shape to center it at the origin.
         centroid = self.vertices.mean(axis=0)
         self.vertices -= centroid
 
-    def scale_shape(self):
-        """Scale the shape so the farthest vertex from the origin is at a distance of 1."""
+    def scaleShape(self):
+        #Scale the shape so the farthest vertex from the origin is at a distance of 1.
         max_distance = np.max(np.linalg.norm(self.vertices, axis=1))
         scale_factor = 1.0 / max_distance
         self.vertices *= scale_factor
 
-    def align_shape(self):
-        """Align the shape using PCA (Principal Component Analysis)."""
+    def alignShape(self):
+        #Align the shape using PCA (Principal Component Analysis).
         # Compute the covariance matrix
         covariance_matrix = np.cov(self.vertices.T)
 
@@ -60,17 +58,17 @@ class ShapeNormalizer:
         # Rotate the vertices so that the eigenvectors align with the x, y, and z axes
         self.vertices = np.dot(self.vertices, sorted_eigenvectors)
 
-    def flip_shape(self):
-        """Flip the shape along each axis based on the moment test."""
+    def flipShape(self):
+        #Flip the shape along each axis based on the moment test.
         # Compute the first moment (mean of the coordinates) for each axis
         moments = self.vertices.mean(axis=0)
 
         # Flip the vertices along each axis if the moment is negative
-        for i in range(3):  # For each axis (x, y, z)
+        for i in range(3):  # For each axis 
             if moments[i] < 0:
                 self.vertices[:, i] *= -1
 
-    def save_obj_file(self, output_filepath):
+    def saveObjFile(self, output_filepath):
         with open(output_filepath, 'w') as file:
             for vertex in self.vertices:
                 file.write(f"v {vertex[0]} {vertex[1]} {vertex[2]}\n")
@@ -78,12 +76,16 @@ class ShapeNormalizer:
                 face_str = " ".join([str(idx + 1) for idx in face])
                 file.write(f"f {face_str}\n")
 
-    def process_all_shapes(self, input_folder, output_folder):
+
+    def update(self):
+        pass
+    
+    def processAllShapes(self, input_folder, output_folder):
         os.makedirs(output_folder, exist_ok=True)
         obj_files = []
         for root, dirs, files in os.walk(input_folder):
             for file in files:
-                if file.lower().endswith('.obj'):  # Case-insensitive check for .obj files
+                if file.lower().endswith('.obj'):  #check for .obj files
                     obj_files.append(os.path.join(root, file))
 
         if not obj_files:
@@ -97,14 +99,14 @@ class ShapeNormalizer:
             os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
 
             print(f"Processing {obj_file}")
-            self.load_obj_file(obj_file)
-            self.normalize_shape()
-            self.save_obj_file(output_filepath)
+            self.loadObjFile(obj_file)
+            self.normalizeShape()
+            self.saveObjFile(output_filepath)
             print(f"Saved normalized file to {output_filepath}")
             print('-' * 40)
-
-    def select_and_normalize_single_file(self, output_folder, file_path):
-        """Allow user to select a single .obj file and normalize it."""
+        
+        #single object normalizing
+    def selectAndNormalizeSingleFile(self, output_folder, file_path):
         # # Hide the main tkinter window
         # root = Tk()
         # root.withdraw()
@@ -121,10 +123,10 @@ class ShapeNormalizer:
 
         # Process the selected file
         # print(f"Processing {file_path}")
-        self.load_obj_file(file_path)
+        self.loadObjFile(file_path)
 
         # Normalize the shape
-        self.normalize_shape()
+        self.normalizeShape()
 
         # Create output file path
         filename = os.path.basename(file_path)#.replace('.obj', '_normalized.obj')
@@ -132,15 +134,11 @@ class ShapeNormalizer:
 
         # Save normalized shape
         os.makedirs(output_folder, exist_ok=True)
-        self.save_obj_file(output_filepath)
+        self.saveObjFile(output_filepath)
         print(f"[Finished] normalization: {file_path}")
 
 
-
-
-#either choose process all shapes or normalize single file depending on what you need.  Change input and output folders as well. 1
-
-
+#change folders based on pathing
 # input_folder = r'C:\Users\axelv\OneDrive\Desktop\MediaRetrieval\MultimediaRetrieval\ShapeDatabase_INFOMR-resampled'
 # output_folder = r'C:\Users\axelv\OneDrive\Desktop\MediaRetrieval\MultimediaRetrieval\NormalizedShapes-resampled' 
 
