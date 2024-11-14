@@ -104,7 +104,7 @@ def select_shape_by_name(df, filePath):
     return selected_shape_idx[0]
 
 def methode(filePath):
-    csv_filepath = r'MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv'
+    csv_filepath = r'MultimediaRetrieval\steps\AxelHoekje\dataBaseNormalised.csv'
 
     df, features = load_descriptors(csv_filepath)
     if df is None or features is None:

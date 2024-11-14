@@ -223,11 +223,10 @@ class ObjectCalculations:
     def compute_D1(self, num_samples):
         barycenter = self.barycenter
         distances = []
-        for _ in range(num_samples):
-            # Randomly select a vertex
-            random_vertex = random.choice(self.vertices)
-            # Calculate the distance between the barycenter and the random vertex
-            distance = np.linalg.norm(barycenter - random_vertex)
+        print('Started D1')
+        for  v in self.vertices:
+            # Calculate the distance between the barycenter and each vertex
+            distance = np.linalg.norm(barycenter - v)
             distances.append(distance)    
         return distances
     
@@ -278,7 +277,7 @@ class ObjectCalculations:
         return volumes
 
     def compute_all_histograms(self):
-        N = 1000
+        N = 100000
         numberBins = 93
         with multiprocessing.Pool(processes=5) as pool:
             results = pool.starmap(self.compute_histogram, [
