@@ -61,10 +61,8 @@ def load_descriptors(csv_filepath):
 
 def visualize_tsne_2d(reduced_features, labels, highlight_index=None, title="t-SNE Visualization"):
     plt.figure(figsize=(12, 8))
-    
-    # Generate a colormap with enough colors for all unique classes
     unique_labels = np.unique(labels)
-    colors = cm.get_cmap("tab20", len(unique_labels))  # Use 'tab20' for up to 20 distinct colors
+    colors = cm.get_cmap("tab20", len(unique_labels))
 
     # Plot each class with its color
     for idx, label in enumerate(unique_labels):
@@ -72,21 +70,19 @@ def visualize_tsne_2d(reduced_features, labels, highlight_index=None, title="t-S
         plt.scatter(reduced_features[indices, 0], reduced_features[indices, 1], 
                     label=label, color=colors(idx), s=50, alpha=0.7)
 
-    # Highlight the specific point if provided
+    # Highlight the specific point
     if highlight_index is not None:
         plt.scatter(reduced_features[highlight_index, 0], reduced_features[highlight_index, 1], 
                     color='red', s=100, edgecolor='black', label='Selected Shape', zorder=5)
-
-    # Set titles and labels
+        
     plt.title(title, fontsize=16)
     plt.xlabel('Component 1', fontsize=12)
     plt.ylabel('Component 2', fontsize=12)
 
-    # Place legend outside the plot
     plt.legend(title="Class", bbox_to_anchor=(1.05, 1), loc='upper left', 
                borderaxespad=0., fontsize='small', ncol=2)
     plt.grid(True)
-    plt.tight_layout()  # Adjust layout to fit everything nicely
+    plt.tight_layout() 
 
     plt.show()
 

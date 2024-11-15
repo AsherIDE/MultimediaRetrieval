@@ -4,28 +4,28 @@ import csv
 import os
 from scipy.spatial import ConvexHull
 from math import pi
-
+import trimesh
 class ObjectCalculations:
     def __init__(self, obj_file):
         self.obj_file = obj_file
         self.vertices, self.faces, self.SurfaceArea, self.volume, self.barycenter = self.load_obj(obj_file)
-        self.D1 = self.compute_histogram(self.compute_D1, 4000, 93)
-        
+        self.convex_hull_volume = self.calculate_convex_hull_volume()
+        self.eigenvalues = self.calculate_eigenvalues()
+        self.obb_volume = self.calculate_obb_volume()
+        self.compactnessObj = self.calcCompactness()
+        self.rectangularityObj = self.rectangularity()
+        self.convexityObj = self.convexity()
         
     def write_to_csv(self):
         # Summarize the lists by taking their mean
         last_part = os.path.basename(self.obj_file)
     
         # Get the part before the last part (directory name)
-        second_to_last_part = os.path.basename(os.path.dirname(self.obj_file))
-        # Convert histogram data to string to avoid issues with CSV formatting
-        D1_str = ','.join(map(str, self.D1))
-
-        
+        second_to_last_part = os.path.basename(os.path.dirname(self.obj_file))       
         data = [
-            last_part, second_to_last_part, D1_str
+            last_part, second_to_last_part, self.compactnessObj, self.rectangularityObj, self.convexityObj
         ]
-        file_path = 'MultimediaRetrieval\steps\step3\descriptorFolder\D1.csv'
+        file_path = 'newVolumeMetrics.csv'
         # Check if the file exists to write headers
         file_exists = os.path.isfile(file_path)    
         # Open the file in append mode
@@ -33,7 +33,7 @@ class ObjectCalculations:
             writer = csv.writer(file)
             # Write the headers if the file is new
             if not file_exists:
-                writer.writerow(['name', 'class', 'D1'])
+                writer.writerow(['name', 'class', 'compactnessObj','rectangularityObj','convexityObj'])
             # Write the data as a new row
             writer.writerow(data)
 
@@ -41,7 +41,7 @@ class ObjectCalculations:
         vertices = []
         faces = []
         SurfaceArea = 0.0
-        volume = 0.0
+        volume = self.getVolume(obj_file)
         with open(obj_file, 'r') as file:
             for line in file:
                 if line.startswith('v '):
@@ -55,9 +55,14 @@ class ObjectCalculations:
                     triangle_area = np.linalg.norm(np.cross(np.array(v1) - np.array(v0), np.array(v2) - np.array(v0))) / 2
                     SurfaceArea += triangle_area
                     # Volume calculation using the signed volume of the tetrahedron
-                    volume += np.dot(v0, np.cross(v1, v2)) / 6.0
+                    #volume += np.dot(v0, np.cross(v1, v2)) / 6.0
         return np.array(vertices), np.array(faces), SurfaceArea, abs(volume), np.mean(vertices, axis=0)
 
+    def getVolume(self, obj_file):
+        mesh = trimesh.load(obj_file)
+        volume = mesh.volume
+        return volume
+    
     def calcSurfaceArea(self):
         return float(f"{self.SurfaceArea:.5f}")
 

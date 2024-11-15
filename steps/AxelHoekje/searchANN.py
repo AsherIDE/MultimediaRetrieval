@@ -9,27 +9,20 @@ import matplotlib.cm as cm
 class KNNEngine:
     def __init__(self, feature_dim, nlist=100, nprobe=10):
         self.feature_dim = feature_dim
-        self.nlist = nlist  # Number of clusters
-        self.nprobe = nprobe  # Number of clusters to search within
-
-        # Initialize a quantizer for clustering
+        self.nlist = nlist 
+        self.nprobe = nprobe 
         self.quantizer = faiss.IndexFlatL2(feature_dim)  
-        # Create an IVF index for approximate search
         self.index = faiss.IndexIVFFlat(self.quantizer, feature_dim, nlist)
-        self.index.nprobe = nprobe  # Set the number of clusters to search
+        self.index.nprobe = nprobe
 
     def build_index(self, features):
         features = np.ascontiguousarray(features, dtype=np.float32)
-        # Train the index for clustering (necessary for IVF)
         self.index.train(features)
-        # Add features to the index
         self.index.add(features)
 
     def query(self, query_vector, k=5):
         query_vector = np.ascontiguousarray(query_vector.reshape(1, -1), dtype=np.float32)
-        # Perform the ANN search
         distances, indices = self.index.search(query_vector, k + 1)
-        # Exclude the query itself from results
         indices, distances = indices[0][1:k+1], distances[0][1:k+1]
         return indices, distances
 
@@ -75,7 +68,7 @@ def visualize_tsne_2d(reduced_features, labels, highlight_index=None, title="t-S
     plt.figure(figsize=(12, 8))
     
     unique_labels = np.unique(labels)
-    colors = cm.get_cmap("tab20", len(unique_labels))  # Use 'tab20' for up to 20 distinct colors
+    colors = cm.get_cmap("tab20", len(unique_labels))
 
     for idx, label in enumerate(unique_labels):
         indices = np.where(labels == label)
@@ -111,7 +104,6 @@ def methode(filePath):
         print("Failed to load descriptors. Exiting.")
         return
 
-    # Initialize KNN engine with ANN using IVF indexing
     knn = KNNEngine(feature_dim=features.shape[1], nlist=100, nprobe=10)
     knn.build_index(features)
 
@@ -124,7 +116,7 @@ def methode(filePath):
     neighbors, distances = knn.query(query_vector, k=k)
 
     print(f"Query shape: {df.iloc[selected_shape_idx]['name']}")
-    print("K-Nearest Neighbors:")
+    print("Nearest Neighbors:")
     combined_array = []
     for i, neighbor_idx in enumerate(neighbors):
         shape_name = df.iloc[neighbor_idx]['name']

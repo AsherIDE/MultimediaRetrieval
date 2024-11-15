@@ -5,6 +5,7 @@ import faiss
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import time
 
 class KNNEngine:
     def __init__(self, feature_dim):
@@ -103,7 +104,7 @@ def select_shape_by_name(df):
     return selected_shape_idx[0]
 
 def main():
-    csv_filepath = r'C:\Users\axelv\OneDrive\Desktop\MediaRetrieval\MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv'
+    csv_filepath = r'MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv'
 
     df, features = load_descriptors(csv_filepath)
     if df is None or features is None:
@@ -117,9 +118,15 @@ def main():
     if selected_shape_idx is None:
         return
 
+    start_time = time.time()
+    
     query_vector = features[selected_shape_idx]
     k = 5
     neighbors, distances = knn.query(query_vector, k=k)
+
+    end_time = time.time()
+    
+    elapsed_time = end_time - start_time
 
     print(f"Query shape: {df.iloc[selected_shape_idx]['name']}")
     print("K-Nearest Neighbors:")
@@ -127,6 +134,8 @@ def main():
         shape_name = df.iloc[neighbor_idx]['name']
         shape_class = df.iloc[neighbor_idx]['class']
         print(f"{i + 1}: Shape = {shape_name}, Class = {shape_class}, Distance = {distances[i]}")
+
+    print(f"Time taken to perform ANN search: {elapsed_time:.6f} seconds")
 
     dr = DimensionalityReducer(features)
     reduced_features = dr.apply_tsne()

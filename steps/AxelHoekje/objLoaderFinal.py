@@ -30,11 +30,11 @@ class SmallerWidget(QGLWidget):
         self.timer.start(16)  # 16 is near 60 fps
         self.camera_pos = np.array([-3.6, -2.2, -8.0])  # X, Y, Z position
         self.mouse_last_pos = None
-        self.is_right_button_pressed = False  # Initialize the flag here 
-        self.is_left_button_pressed = False #Left button standard false 
+        self.is_right_button_pressed = False  
+        self.is_left_button_pressed = False  
         self.rotation_x = 0
         self.rotation_y = 0
-        self.file_name = ""  # Add this line to store the file name
+        self.file_name = "" 
         self.distance_label = ""
         
     def load_obj_file(self, fileName, distance):
@@ -88,7 +88,7 @@ class SmallerWidget(QGLWidget):
         if self.display_edges:
             self.draw_edges()
         self.renderText(10, 10, self.file_name)
-        self.renderText(10, 25, self.distance_label)  # Add this line to render the file name
+        self.renderText(10, 25, self.distance_label) 
 
     def draw_vertices(self):
         glBegin(GL_POINTS)
@@ -197,8 +197,8 @@ class OpenGLWidget(QGLWidget):
         #voor de camera
         self.camera_pos = np.array([0.0, 0.0, -4.0])  # X, Y, Z position
         self.mouse_last_pos = None
-        self.is_right_button_pressed = False  # Initialize the flag here 
-        self.is_left_button_pressed = False #Left button standard false 
+        self.is_right_button_pressed = False  
+        self.is_left_button_pressed = False 
         # Object rotation angles
         self.rotation_x = 0
         self.rotation_y = 0
@@ -355,7 +355,7 @@ class MainWindow(QMainWindow):
         self.file_pathResampled = ""
         self.temp_file_pathResampled = ""
         self.opengl_widget = OpenGLWidget(self)
-        self.opengl_widget.setFixedSize(1650, 600)  # Set fixed size for the OpenGL widget
+        self.opengl_widget.setFixedSize(1650, 600)  #Fixed size
 
         self.opengl_widgets_small = [SmallerWidget(self) for _ in range(5)]
         for widget in self.opengl_widgets_small:
@@ -365,14 +365,14 @@ class MainWindow(QMainWindow):
         for widget in self.opengl_widgets_small:
             hbox.addWidget(widget)
 
-        #Create side panel with buttons
+        #Side panel with buttons
         self.side_panel = QWidget(self)
         self.side_layout = QVBoxLayout(self.side_panel)
         self.side_panel.setFixedWidth(240)
 
-        # Title label
+        #Title
         self.querying_label = QLabel('Querying', self)
-        self.querying_label.setAlignment(Qt.AlignCenter)  # Center the text
+        self.querying_label.setAlignment(Qt.AlignCenter)
         font = QFont()
         font.setBold(True)
         self.querying_label.setFont(font)
@@ -383,7 +383,7 @@ class MainWindow(QMainWindow):
         self.button.clicked.connect(self.open_file_dialog)
         self.side_layout.addWidget(self.button)
         
-        #Text box to display chosen file
+        #Text box chosen file
         self.file_label = QLabel('The loaded file:', self)
         font = QFont()
         font.setBold(True)
@@ -401,9 +401,9 @@ class MainWindow(QMainWindow):
         self.options_label.setFont(font)
         self.side_layout.addWidget(self.options_label)
 
-        # Create a horizontal layout for the edges buttons
+        #Create a horizontal layout for the edges buttons
         self.vertices_faces_layout = QHBoxLayout()
-        # Toggle vertices button
+        #Toggle vertices button
         self.vertices_button = QPushButton('Vertices', self)
         self.vertices_button.clicked.connect(self.opengl_widget.toggle_vertices)
         self.vertices_faces_layout.addWidget(self.vertices_button)
@@ -413,13 +413,13 @@ class MainWindow(QMainWindow):
         self.vertices_faces_layout.addWidget(self.faces_button)
         self.side_layout.addLayout(self.vertices_faces_layout)
 
-        # Create a horizontal layout for the edges buttons
+        #Create a horizontal layout for the edges buttons
         self.edges_layout = QHBoxLayout()
-        # Edges On button
+        #Edges On button
         self.edges_on_button = QPushButton('Edges On', self)
         self.edges_on_button.clicked.connect(self.opengl_widget.toggle_edges_on)
         self.edges_layout.addWidget(self.edges_on_button)
-        # Edges Off button
+        #Edges Off button
         self.edges_off_button = QPushButton('Edges Off', self)
         self.edges_off_button.clicked.connect(self.opengl_widget.toggle_edges_off)
         self.edges_layout.addWidget(self.edges_off_button)        
@@ -449,13 +449,13 @@ class MainWindow(QMainWindow):
 
         #Object stats
         self.stats_label = QLabel('Object statistics', self)
-        self.stats_label.setAlignment(Qt.AlignCenter)  # Center the text
+        self.stats_label.setAlignment(Qt.AlignCenter)
         font = QFont()
         font.setBold(True)
         self.stats_label.setFont(font)
         self.side_layout.addWidget(self.stats_label)
 
-        # Text boxes to display vertices and faces count
+        #Text boxes display vertices and faces count
         self.vertices_label = QLabel('Vertices count:', self)
         self.side_layout.addWidget(self.vertices_label)
         self.vertices_display = QLineEdit(self)
@@ -468,7 +468,7 @@ class MainWindow(QMainWindow):
         self.faces_display.setReadOnly(True)
         self.side_layout.addWidget(self.faces_display)
 
-        # Additional text boxes for other statistics
+        #Additional text boxes for other statistics
         self.surface_area_label = QLabel('Surface Area:', self)
         self.side_layout.addWidget(self.surface_area_label)
         self.surface_area_display = QLineEdit(self)
@@ -505,31 +505,30 @@ class MainWindow(QMainWindow):
         self.eccentricity_display.setReadOnly(True)
         self.side_layout.addWidget(self.eccentricity_display)
         
-        # Create the main layout
+        #Create the main layout
         main_layout = QVBoxLayout()
         
-        # Top layout with the main OpenGL widget and side panel
+        #Top layout with the main OpenGL widget and side panel
         top_layout = QHBoxLayout()
         top_layout.addWidget(self.opengl_widget, 0, Qt.AlignTop | Qt.AlignLeft)
         top_layout.addWidget(self.side_panel)
 
-        # Add the top layout and the horizontal layout for small widgets to the main layout
+        #Add the top layout and the horizontal layout for small widgets to the main layout
         main_layout.addLayout(top_layout)
-        main_layout.addStretch()  # Add stretch to push the row to the bottom
+        main_layout.addStretch()
         main_layout.addLayout(hbox)
 
-        # Set the main layout to the central widget
+        #Set the main layout to the central widget
         container = QWidget()
         container.setLayout(main_layout)
         self.setCentralWidget(container)
-        self.showMaximized()  # Open the application in maximized window
+        self.showMaximized()  #Open the application in maximized window
 
     #Define the method to perform simple search
     def insert_string(self, filename, insert):
-        # Use a regular expression to find the part before .obj
         match = re.match(r"(.*?)(\.obj)", filename)
         if match:
-            # Construct the new filename with the inserted string
+            #Construct the new filename
             new_filename = f"{match.group(1)}{insert}{match.group(2)}"
             return new_filename
         return filename
@@ -553,7 +552,6 @@ class MainWindow(QMainWindow):
             distances.append(item[1])
         self.displaySmallerWidgets(results, distances)
 
-    # Define the method to handle the button click
     def show_global_descriptors(self):
         if hasattr(self, 'shape'):
             descriptors = self.shape.getGlobalDescriptors()
@@ -563,11 +561,11 @@ class MainWindow(QMainWindow):
 
     def plot_descriptors(self, descriptors):
         A3, D1, D2, D3, D4 = descriptors
-        # Create a new dialog window
+        #Create a new dialog window
         dialog = QDialog(self)
         dialog.setWindowTitle("Global Descriptors Frequency plots N=100k and B=93")
         layout = QVBoxLayout(dialog)
-        # Create the plot
+        #Create the plot
         fig, axs = plt.subplots(3, 2, figsize=(10, 10))
         axs = axs.flatten()
         axs[0].plot(A3)
@@ -580,12 +578,10 @@ class MainWindow(QMainWindow):
         axs[3].set_title('D3: square root of area of triangle given by 3 random vertices')
         axs[4].plot(D4)
         axs[4].set_title('D4: cube root of volume of tetrahedron formed by random vertices')
-
-        # Hide the empty subplot
         fig.delaxes(axs[5])
 
         plt.tight_layout()
-        # Add the plot to the dialog
+        #Add the plot to the dialog
         canvas = FigureCanvas(fig)
         layout.addWidget(canvas)
         dialog.setLayout(layout)
@@ -611,7 +607,7 @@ class MainWindow(QMainWindow):
         return temp_file_path_in
     
 
-    # Function for opening the file and setting all stats according to the file
+    #Function for opening the file and setting all stats according to the file
     def open_file_dialog(self):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self, "Open OBJ File", "", "OBJ Files (*.obj);;All Files (*)", options=options)
@@ -625,8 +621,7 @@ class MainWindow(QMainWindow):
             self.file_display.setText(fileName)
             self.opengl_widget.toggle_vertices()
             self.opengl_widget.toggle_faces()
-
-            # Set the text for the additional statistics
+            #Set the text for the additional statistics
             self.vertices_display.setText(str(self.opengl_widget.get_vertices_count()))
             self.faces_display.setText(str(self.opengl_widget.get_faces_count()))
             #Calculate descriptors
