@@ -12,7 +12,7 @@ class KNNEngine:
         self.feature_dim = feature_dim
         self.index = faiss.IndexFlatL2(self.feature_dim)
 
-    def build_index(self, features):
+    def buildIndex(self, features):
         features = np.ascontiguousarray(features, dtype=np.float32)
         self.index.add(features)
 
@@ -26,12 +26,12 @@ class DimensionalityReducer:
     def __init__(self, features):
         self.features = features
 
-    def apply_tsne(self):
+    def applyTsne(self):
         tsne = TSNE(n_components=2, perplexity=30, n_iter=1000, random_state=42)
         reduced_features = tsne.fit_transform(self.features)
         return reduced_features
 
-def parse_descriptor_columns(df):
+def parseDescriptorColumns(df):
     for col in ['A3', 'D1', 'D2', 'D3', 'D4']:
         df[col] = df[col].apply(lambda x: np.fromstring(x, sep=','))
 
@@ -50,48 +50,43 @@ def parse_descriptor_columns(df):
     ])
     return feature_matrix
 
-def load_descriptors(csv_filepath):
+def loadDescriptors(csv_filepath):
     if os.path.exists(csv_filepath):
         print("File found! Loading...")
         df = pd.read_csv(csv_filepath)
-        feature_matrix = parse_descriptor_columns(df)
+        feature_matrix = parseDescriptorColumns(df)
         return df, feature_matrix
     else:
         print(f"File not found at: {csv_filepath}")
         return None, None
 
-def visualize_tsne_2d(reduced_features, labels, highlight_index=None, title="t-SNE Visualization"):
+def visualizeTsne2d(reduced_features, labels, highlight_index=None, title="t-SNE Visualization"):
     plt.figure(figsize=(12, 8))
     
-    # Generate a colormap with enough colors for all unique classes
     unique_labels = np.unique(labels)
     colors = cm.get_cmap("tab20", len(unique_labels))  # Use 'tab20' for up to 20 distinct colors
 
-    # Plot each class with its color
     for idx, label in enumerate(unique_labels):
         indices = np.where(labels == label)
         plt.scatter(reduced_features[indices, 0], reduced_features[indices, 1], 
                     label=label, color=colors(idx), s=50, alpha=0.7)
 
-    # Highlight the specific point if provided
     if highlight_index is not None:
         plt.scatter(reduced_features[highlight_index, 0], reduced_features[highlight_index, 1], 
                     color='red', s=100, edgecolor='black', label='Selected Shape', zorder=5)
 
-    # Set titles and labels
     plt.title(title, fontsize=16)
     plt.xlabel('Component 1', fontsize=12)
     plt.ylabel('Component 2', fontsize=12)
 
-    # Place legend outside the plot
     plt.legend(title="Class", bbox_to_anchor=(1.05, 1), loc='upper left', 
                borderaxespad=0., fontsize='small', ncol=2)
     plt.grid(True)
-    plt.tight_layout()  # Adjust layout to fit everything nicely
+    plt.tight_layout()
 
     plt.show()
 
-def select_shape_by_name(df):
+def selectShapeByName(df):
     print("Available shapes:")
     for index, row in df.iterrows():
         print(f"- {row['name']}")
@@ -106,15 +101,15 @@ def select_shape_by_name(df):
 def main():
     csv_filepath = r'MultimediaRetrieval\steps\AxelHoekje\dataBaseFinal.csv'
 
-    df, features = load_descriptors(csv_filepath)
+    df, features = loadDescriptors(csv_filepath)
     if df is None or features is None:
         print("Failed to load descriptors. Exiting.")
         return
 
     knn = KNNEngine(feature_dim=features.shape[1])
-    knn.build_index(features)
+    knn.buildIndex(features)
 
-    selected_shape_idx = select_shape_by_name(df)
+    selected_shape_idx = selectShapeByName(df)
     if selected_shape_idx is None:
         return
 
@@ -138,10 +133,10 @@ def main():
     print(f"Time taken to perform ANN search: {elapsed_time:.6f} seconds")
 
     dr = DimensionalityReducer(features)
-    reduced_features = dr.apply_tsne()
+    reduced_features = dr.applyTsne()
 
     labels = df['class'].values
-    visualize_tsne_2d(reduced_features, labels, highlight_index=selected_shape_idx)  # Highlight the selected shape
+    visualizeTsne2d(reduced_features, labels, highlight_index=selected_shape_idx)
 
 if __name__ == "__main__":
     main()
